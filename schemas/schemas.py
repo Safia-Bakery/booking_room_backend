@@ -1,29 +1,50 @@
+import re
 from datetime import datetime
+from typing import List, Optional, Union
+from pydantic import BaseModel, ConfigDict, EmailStr
 
-from pydantic import BaseModel, Field
+
+# pattern = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
 
 
-class UserRole(BaseModel):
-    id: int
+class TunedModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GetUserRole(TunedModel):
     role: str
-    permissions: list[str]
+    permissions: List[str]
 
 
-class User(BaseModel):
+class CreateUpdateUserRole(BaseModel):
+    role: str
+    permissions: List[str]
+
+
+class GetUser(TunedModel):
     id: int
     role_id: int
     fullname: str
-    email: str = Field(pattern=r"^[\w\.-]+@[\w\.-]+\.\w+$")
-    reg_date: datetime.timestamp = datetime.now()
-    update_date: datetime.timestamp = datetime.now()
+    email: str
+    reg_date: datetime = datetime.now()
+    update_date: datetime = datetime.now()
 
 
-class Room(BaseModel):
+class CreateUpdateUser(BaseModel):
+    id: int
+    role_id: int
+    fullname: str
+    email: str
+    reg_date: datetime = datetime.now()
+    update_date: datetime = datetime.now()
+
+
+class RoomSchema(TunedModel):
     id: int
     name: str
 
 
-class Meeting(BaseModel):
+class MeetingSchema(TunedModel):
     id: int
     room_id: int
     organized_by: int
@@ -31,11 +52,11 @@ class Meeting(BaseModel):
     description: str
     start_time: datetime
     end_time: datetime
-    created_at: datetime
+    created_at: datetime = datetime.now()
 
 
-class Invitation(BaseModel):
+class InvitationSchema(TunedModel):
     id: int
-    user_id: User.id
-    meeting_id: Meeting.id
-    room_id: Room.id
+    user_id: GetUser
+    meeting_id: MeetingSchema
+    room_id: RoomSchema

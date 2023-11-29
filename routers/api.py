@@ -1,12 +1,14 @@
 import re
 from typing import List
-from fastapi import FastAPI, APIRouter
-from models.models import User
-from schemas.schemas import User, Room
+from fastapi import APIRouter
+from config.db import SessionLocal
+from models.models import UserRole
+from schemas.schemas import GetUser, RoomSchema, GetUserRole, MeetingSchema, InvitationSchema, CreateUpdateUserRole
+from crud import crud
 
 
 router = APIRouter()
-
+session = SessionLocal()
 
 fake_users = [
     {"id": 1, "fullname": "Bakhtiyor Bakhriddinov", "phone": "+998977828474", "email": "uzdev27@gmail.com"},
@@ -15,12 +17,14 @@ fake_users = [
 ]
 
 
-def validate_email(email):
-    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-    if re.match(pattern, email):
-        return True
-    else:
-        return False
+@router.get("/roles", response_model=GetUserRole)
+def get_roles():
+    return crud.get_all_roles(db=session)
+
+
+@router.post("/role", response_model=GetUserRole)
+def create_role(form_data: CreateUpdateUserRole):
+    return crud.create_role(db=session, form_data=form_data)
 
 
 @router.get("/users")
@@ -28,14 +32,14 @@ def get_users(limit: int, offset: int):
     return fake_users[offset:][:limit]
 
 
-@router.get("/users/{user_id}", response_model=List[User])
+@router.get("/users/{user_id}", response_model=List[GetUser])
 def get_user(user_id: int):
     return [user for user in fake_users if user["id"] == user_id]
     # return user_id
 
 
 @router.post("/users")
-def add_users(users: List[User]):
+def add_users(users: List[GetUser]):
     fake_users.extend(users)
     return {"status": 200, "data": fake_users}
 
@@ -48,6 +52,6 @@ def change_username(user_id: int, new_name: str):
 
 
 @router.get("/rooms")
-def get_users(rooms: List[Room]):
+def get_users(rooms: List[RoomSchema]):
     return {"status": 200, "data": rooms}
     # must be crud function responses

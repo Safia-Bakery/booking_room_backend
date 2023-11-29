@@ -1,5 +1,5 @@
 from config.db import engine, async_session_maker
-from models.models import Base, User
+from models.models import User, Base
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import AsyncGenerator
 from fastapi import Depends

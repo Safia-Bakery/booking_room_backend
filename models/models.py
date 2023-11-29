@@ -1,101 +1,72 @@
-from datetime import datetime
-from typing import Optional
+from sqlalchemy import Integer, String, DateTime, JSON, Text, ARRAY
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey, Column
 
-from sqlalchemy import types, ForeignKey, Table, Column
-from ormar import Model, fields, ModelMeta
-from config.db import database, metadata
-
-# class Base(DeclarativeBase):
-#     pass
-
+# from ormar import Model, ModelMeta, Integer, String, DateTime, Text, ForeignKey, JSON
+# from config.db import metadata
 
 
-roles = Table(
-    "roles",
-    metadata,
-    Column("id", types.Integer, primary_key=True, autoincrement=True),
-    Column("role", types.String, nullable=False),
-    Column("permissions", types.JSON, nullable=False)
-)
+# class MainMeta(ModelMeta):
+#     class Meta:
+#         metadata = metadata
+#         database = database
 
 
-users = Table(
-    "users",
-    metadata,
-    Column("id", types.Integer, primary_key=True, autoincrement=True),
-    Column("role_id", types.Integer, ForeignKey("roles.id"), nullable=False),
-    Column("fullname", types.String, nullable=False),
-    Column("phone", types.String, nullable=True),
-    Column("email", types.String, nullable=False),
-    Column("reg_date", types.TIMESTAMP, nullable=False, default=datetime.utcnow),
-    Column("update_date", types.TIMESTAMP, nullable=False, default=datetime.utcnow)
-)
+Base = declarative_base()
 
 
-# class User(SQLAlchemyBaseUserTable[int], Base):
-#     id: int = Column(types.Integer, primary_key=True, autoincrement=True),
-#     role_id: int = Column(types.Integer, ForeignKey("roles.id"), nullable=False),
-#     fullname: str = Column(types.String, nullable=False),
-#     email: str = Column(types.String(length=320), unique=True, index=True, nullable=False)
-#     reg_date: datetime.timestamp = Column(types.DateTime(timezone=True), nullable=False)
-#     update_date: datetime.timestamp = Column(types.String(length=320), unique=True, index=True, nullable=False)
-#     hashed_password: str = Column(types.String(length=1024), nullable=False)
-#     is_active: bool = Column(types.Boolean, default=True, nullable=False)
-#     is_superuser: bool = Column(types.Boolean, default=False, nullable=False)
-#     is_verified: bool = Column(types.Boolean, default=False, nullable=False)
+class UserRole(Base):
+    __tablename__ = 'roles'
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    role = Column(String, unique=True, nullable=False)
+    permissions = Column(ARRAY(String), nullable=False)
+    user = relationship('User', back_populates='role')
 
 
-class MainMeta(ModelMeta):
-    class Meta:
-        metadata = metadata
-        database = database
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
+    fullname = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    reg_date = Column(DateTime, default=func.now())
+    update_date = Column(DateTime, default=func.now())
+    role = relationship('UserRole', back_populates='user')
+    meeting = relationship('Meeting', back_populates='user')
+    invitation = relationship('Invitation', back_populates='user')
 
 
-class UserRole(Model):
-    class Meta(MainMeta):
-        pass
-
-    id: int = fields.Integer(primary_key=True, nullable=False)
-    role: str = fields.String(nullable=False)
-    permissions: list[str] = fields.JSON(nullable=False)
-
-
-class User(Model):
-    id: int = fields.Integer(primary_key=True, nullable=False)
-    role_id: Optional[UserRole] = fields.ForeignKey(UserRole)
-    fullname: str = fields.String(nullable=False)
-    email: str = fields.String(nullable=False)
-    reg_date: datetime = fields.DateTime(default=datetime.now())
-    update_date: datetime = fields.DateTime(default=datetime.now())
+class Room(Base):
+    __tablename__ = 'rooms'
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    name = Column(String, nullable=False)
+    meeting = relationship('Meeting', back_populates='room')
+    invitation = relationship('Invitation', back_populates='room')
 
 
-class Room(Model):
-    class Meta(MainMeta):
-        pass
-
-    id: int = fields.Integer(primary_key=True, nullable=False)
-    name: str = fields.String(nullable=False)
-
-
-class Meeting(Model):
-    class Meta(MainMeta):
-        pass
-
-    id: int = fields.Integer(primary_key=True, nullable=False)
-    room_id: int = fields.Integer(nullable=False)
-    organized_by: int = fields.Integer(nullable=False)
-    name: str = fields.String()
-    description: str = fields.Text()
-    start_time: datetime = fields.DateTime(nullable=False)
-    end_time: datetime = fields.DateTime(nullable=False)
-    created_at: datetime = fields.DateTime(default=datetime.now())
+class Meeting(Base):
+    __tablename__ = 'meetings'
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
+    organized_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=func.now())
+    room = relationship('Room', back_populates='meeting')
+    user = relationship('User', back_populates='meeting')
+    invitation = relationship('Invitation', back_populates='meeting')
 
 
-class Invitation(Model):
-    class Meta(MainMeta):
-        pass
-
-    id: int = fields.Integer(primary_key=True, nullable=False)
-    user_id: int = fields.Integer(nullable=False)
-    meeting_id: int = fields.Integer(nullable=False)
-    room_id: int = fields.Integer(nullable=False)
+class Invitation(Base):
+    __tablename__ = 'invitations'
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    meeting_id = Column(Integer, ForeignKey("meetings.id"), nullable=False)
+    room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
+    user = relationship('User', back_populates='invitation')
+    meeting = relationship('Meeting', back_populates='invitation')
+    room = relationship('Room', back_populates='invitation')
