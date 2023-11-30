@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict, EmailStr
+from config.config import SECRET_KEY
 
 
 # pattern = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
@@ -30,13 +31,16 @@ class GetUser(TunedModel):
     update_date: datetime = datetime.now()
 
 
-class CreateUpdateUser(BaseModel):
-    id: int
+class SignUpUser(BaseModel):
     role_id: int
     fullname: str
     email: str
     reg_date: datetime = datetime.now()
     update_date: datetime = datetime.now()
+
+
+class LoginUser(BaseModel):
+    email: str
 
 
 class RoomSchema(TunedModel):
@@ -60,3 +64,9 @@ class InvitationSchema(TunedModel):
     user_id: GetUser
     meeting_id: MeetingSchema
     room_id: RoomSchema
+
+
+class Token(BaseModel):
+    access_token: str = SECRET_KEY
+    token_type: str
+

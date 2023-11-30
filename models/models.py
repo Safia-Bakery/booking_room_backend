@@ -30,7 +30,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     fullname = Column(String, nullable=False)
-    email = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=False)
     reg_date = Column(DateTime, default=func.now())
     update_date = Column(DateTime, default=func.now())
     role = relationship('UserRole', back_populates='user')

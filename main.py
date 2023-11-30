@@ -1,26 +1,21 @@
+from typing import List
+
 from fastapi import FastAPI
-from routers.api import router
+from routers.app_routes import app_router
+from routers.auth_routes import auth_router
+from fastapi_jwt_auth import AuthJWT
+from schemas.schemas import Settings
 
 
 app = FastAPI(
     title="Book Meeting"
 )
-# metadata.create_all(engine)
-# app.state.database = database
 
 
-# @app.on_event("startup")
-# async def startup() -> None:
-#     database_ = app.state.database
-#     if not database_.is_connected:
-#         await database_.connect()
-#
-#
-# @app.on_event("shutdown")
-# async def shutdown() -> None:
-#     database_ = app.state.database
-#     if database_.is_connected:
-#         await database_.disconnect()
+@AuthJWT.load_config
+def get_config():
+    return Settings()
 
 
-app.include_router(router)
+app.include_router(app_router)
+app.include_router(auth_router)
