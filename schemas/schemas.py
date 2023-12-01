@@ -13,13 +13,23 @@ class TunedModel(BaseModel):
 
 
 class GetUserRole(TunedModel):
+    id: int
     role: str
     permissions: List[str]
 
 
-class CreateUpdateUserRole(BaseModel):
+class CreateUserRole(BaseModel):
     role: str
     permissions: List[str]
+
+
+class GetRoom(TunedModel):
+    id: int
+    name: str
+
+
+class CreateRoom(BaseModel):
+    name: str
 
 
 class GetUser(TunedModel):
@@ -43,12 +53,7 @@ class LoginUser(BaseModel):
     email: str
 
 
-class RoomSchema(TunedModel):
-    id: int
-    name: str
-
-
-class MeetingSchema(TunedModel):
+class GetMeeting(TunedModel):
     id: int
     room_id: int
     organized_by: int
@@ -59,14 +64,33 @@ class MeetingSchema(TunedModel):
     created_at: datetime = datetime.now()
 
 
-class InvitationSchema(TunedModel):
+class CreateMeeting(BaseModel):
+    room_id: int
+    organized_by: int
+    name: str
+    description: str
+    start_time: datetime
+    end_time: datetime
+
+
+class GetInvitation(TunedModel):
     id: int
     user_id: GetUser
-    meeting_id: MeetingSchema
-    room_id: RoomSchema
+    meeting_id: GetMeeting
+    room_id: GetRoom
+
+
+class CreateInvitation(BaseModel):
+    user_id: List[int]
+    meeting_id: int
+    room_id: int
 
 
 class Token(BaseModel):
     access_token: str = SECRET_KEY
     token_type: str
+
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
 

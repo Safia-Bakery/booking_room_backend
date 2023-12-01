@@ -41,7 +41,7 @@ class User(Base):
 class Room(Base):
     __tablename__ = 'rooms'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    name = Column(String, nullable=False)
+    name = Column(String, unique=True, nullable=False)
     meeting = relationship('Meeting', back_populates='room')
     invitation = relationship('Invitation', back_populates='room')
 
