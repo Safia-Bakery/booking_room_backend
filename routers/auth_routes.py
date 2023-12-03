@@ -4,7 +4,7 @@ from fastapi import APIRouter, status, Depends
 from config.db import SessionLocal
 from sqlalchemy.orm import Session
 from models.models import UserRole, User
-from schemas.schemas import SignUpUser, LoginUser
+from schemas.schemas import SignUpUser, GetUser
 from crud import crud
 from fastapi.exceptions import HTTPException
 
@@ -24,9 +24,12 @@ auth_router = APIRouter(
 # ]
 
 
-@auth_router.post("/signup", response_model=SignUpUser, status_code=status.HTTP_201_CREATED)
+@auth_router.post("/signup", response_model=GetUser, status_code=status.HTTP_201_CREATED)
 async def signup(user: SignUpUser, db: Session = Depends(get_db)):
-    return crud.create_user(db=db, form_data=user)
+    created_user = crud.create_user(db=db, form_data=user)
+    if not created_user:
+        raise HTTPException(status_code=status.HTTP_302_FOUND, detail='User with the email already exists!')
+    return created_user
 
 
 # @auth_router.post("/login", response_model=LoginUser, status_code=200)

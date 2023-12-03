@@ -22,18 +22,18 @@ class UserRole(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     role = Column(String, unique=True, nullable=False)
     permissions = Column(ARRAY(String), nullable=False)
-    user = relationship('User', back_populates='role')
+    user = relationship('User', back_populates='role', cascade="all, delete")
 
 
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
+    role_id = Column(Integer, ForeignKey("roles.id", ondelete='CASCADE'), nullable=True)
     fullname = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     reg_date = Column(DateTime, default=func.now())
     update_date = Column(DateTime, default=func.now())
-    role = relationship('UserRole', back_populates='user')
+    role = relationship('UserRole', back_populates='user', cascade="all, delete")
     meeting = relationship('Meeting', back_populates='user')
     invitation = relationship('Invitation', back_populates='user')
 

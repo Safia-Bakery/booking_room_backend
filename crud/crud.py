@@ -26,9 +26,20 @@ def create_role(db: Session, form_data: CreateUserRole):
         db.refresh(query)
     except IntegrityError:
         db.rollback()
-        return HTTPException(status_code=status.HTTP_302_FOUND, detail="User role with the name already exists!")
+    else:
+        return query
 
+
+def delete_role(id, db: Session):
+    query = db.query(models.UserRole).filter(models.UserRole.id == id).delete(synchronize_session=False)
+    db.commit()
     return query
+
+
+def update_role(db: Session, id, role):
+    obj = db.query(models.UserRole).filter(models.UserRole.id == id).update(dict(role))
+    db.commit()
+    return obj
 
 
 def get_all_rooms(db: Session):
@@ -49,9 +60,8 @@ def create_room(db: Session, form_data: CreateRoom):
         db.refresh(query)
     except IntegrityError:
         db.rollback()
-        return HTTPException(status_code=status.HTTP_302_FOUND, detail="The room with the name already exists!")
-
-    return query
+    else:
+        return query
 
 
 def get_all_users(db: Session):
@@ -60,7 +70,8 @@ def get_all_users(db: Session):
 
 
 def get_user(id, db: Session):
-    query = db.query(models.User).get(id)
+    # query = db.query(models.User).get(id)
+    query = db.query(models.User).filter(models.User.id == id).first()
     return query
 
 
@@ -69,7 +80,7 @@ def login_user(db: Session, form_data: LoginUser):
     return query
 
 
-def create_user(db: Session, form_data: SignUpUser):
+def create_user(db: Session, form_data):
     query = models.User(role_id=form_data.role_id,
                         fullname=form_data.fullname,
                         email=form_data.email
@@ -78,11 +89,10 @@ def create_user(db: Session, form_data: SignUpUser):
         db.add(query)
         db.commit()
         db.refresh(query)
-    except IntegrityError as ex:
+    except IntegrityError:
         db.rollback()
-        return HTTPException(status_code=status.HTTP_302_FOUND, detail='User with the email already exists!')
-
-    return query
+    else:
+        return query
 
 
 def get_all_meetings(db: Session):
@@ -91,7 +101,6 @@ def get_all_meetings(db: Session):
 
 
 def get_all_meetings_of_room_by_date(room_id, date, db: Session):
-    datetime()
     query = db.query(models.Meeting).filter(models.Meeting.room_id == room_id).filter(models.Meeting.start_time.cast(Date) == date)
     return query
 
@@ -115,9 +124,8 @@ def create_meeting(db: Session, form_data: CreateMeeting):
         db.refresh(query)
     except IntegrityError:
         db.rollback()
-        return HTTPException(status_code=status.HTTP_302_FOUND, detail="The Meeting already exists!")
-
-    return query
+    else:
+        return query
 
 
 def get_all_user_invitations(user_id, db: Session):
@@ -137,6 +145,3 @@ def create_invitations(db: Session, form_data: CreateInvitation):
             db.refresh(query)
         except IntegrityError:
             db.rollback()
-            return HTTPException(status_code=status.HTTP_302_FOUND, detail="The invitation already exists!")
-
-    return True

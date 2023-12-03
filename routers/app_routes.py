@@ -14,7 +14,7 @@ app_router = APIRouter(
 
 
 # ----------------------- Actions with ROOMS ------------------------
-@app_router.get("/rooms", response_model=List[GetRoom])
+@app_router.get("/rooms", response_model=List[GetRoom], status_code=200)
 async def get_rooms(db: Session = Depends(get_db)):
     return crud.get_all_rooms(db=db)
 
@@ -24,29 +24,36 @@ async def get_room(id: int, response: Response, db: Session = Depends(get_db)):
     room = crud.get_room(id=id, db=db)
     if not room:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room with the id not found!")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room with the id not found!")
     return room
 
 
 # --------------------- Actions with MEETINGS --------------------------
-@app_router.get("/meetings", response_model=List[GetMeeting])
+@app_router.get("/meetings", response_model=List[GetMeeting], status_code=200)
 def get_meetings_of_room(room_id: int, date: date, db: Session = Depends(get_db)):
-    return crud.get_all_meetings_of_room_by_date(room_id=room_id, date=date, db=db)
+    specific_meetings = crud.get_all_meetings_of_room_by_date(room_id=room_id, date=date, db=db)
+    if not specific_meetings:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Planed meetings not found!")
+    return specific_meetings
 
 
-@app_router.post("/meetings", response_model=CreateMeeting)
+@app_router.post("/meetings", response_model=CreateMeeting, status_code=201)
 async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db)):
-    return crud.create_meeting(db=db, form_data=form_data)
+    created_meeting = crud.create_meeting(db=db, form_data=form_data)
+    if not created_meeting:
+        raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The meeting with id already exists!")
+    return created_meeting
 
 
 # ----------------- Actions with INVITATIONS -----------------------
-@app_router.post("/invitations", response_model=CreateInvitation)
-async def create_user_invitation(form_data: CreateInvitation, db: Session = Depends(get_db)):
-    return crud.create_invitations(db=db, form_data=form_data)
+@app_router.post("/invitations", response_model=CreateInvitation, status_code=201)
+async def create_invitation(form_data: CreateInvitation, db: Session = Depends(get_db)):
+    created_invitation = crud.create_invitations(db=db, form_data=form_data)
+    return created_invitation
 
 
 @app_router.get("/invitations", response_model=List[GetInvitation])
-async def get_user_invitations(user_id: int, db: Session = Depends(get_db)):
+async def get_invitations(user_id: int, db: Session = Depends(get_db)):
     return crud.get_all_user_invitations(user_id=user_id, db=db)
 
 

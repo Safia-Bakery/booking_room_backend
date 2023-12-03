@@ -2,5 +2,4 @@ fastapi[all]
 alembic
 uvicorn
 psycopg2
-fastapi_jwt_auth
 python-jose
