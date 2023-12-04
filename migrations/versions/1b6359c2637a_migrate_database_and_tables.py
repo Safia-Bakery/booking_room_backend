@@ -1,8 +1,8 @@
-"""Migrate database
+"""Migrate database and tables
 
-Revision ID: 30c40278cffc
+Revision ID: 1b6359c2637a
 Revises: 
-Create Date: 2023-11-29 14:32:39.720933
+Create Date: 2023-12-04 14:20:52.332216
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '30c40278cffc'
+revision: str = '1b6359c2637a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,12 +24,14 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('role', sa.String(), nullable=False),
     sa.Column('permissions', sa.ARRAY(sa.String()), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('role')
     )
     op.create_table('rooms',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -38,8 +40,9 @@ def upgrade() -> None:
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('reg_date', sa.DateTime(), nullable=True),
     sa.Column('update_date', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email')
     )
     op.create_table('meetings',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),

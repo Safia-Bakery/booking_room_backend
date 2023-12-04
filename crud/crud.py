@@ -7,6 +7,7 @@ from schemas.schemas import *
 from datetime import datetime
 
 
+# ----------------------- USER ROLES OPERATIONS ------------------------------------
 def get_all_roles(db: Session):
     query = db.query(models.UserRole).all()
     return query
@@ -36,12 +37,13 @@ def delete_role(id, db: Session):
     return query
 
 
-def update_role(db: Session, id, role):
+def update_role(db: Session, id, role: CreateUserRole):
     obj = db.query(models.UserRole).filter(models.UserRole.id == id).update(dict(role))
     db.commit()
     return obj
 
 
+# ----------------------- ROOMS OPERATIONS ------------------------------------
 def get_all_rooms(db: Session):
     query = db.query(models.Room).all()
     return query
@@ -64,6 +66,7 @@ def create_room(db: Session, form_data: CreateRoom):
         return query
 
 
+# ----------------------- USERS OPERATIONS ------------------------------------
 def get_all_users(db: Session):
     query = db.query(models.User).all()
     return query
@@ -75,12 +78,12 @@ def get_user(id, db: Session):
     return query
 
 
-def login_user(db: Session, form_data: LoginUser):
-    query = db.query(models.User).filter(models.User.email == form_data.email).first()
+def login_user(db: Session, user: LoginUser):
+    query = db.query(models.User).filter(models.User.email == user.email).first()
     return query
 
 
-def create_user(db: Session, form_data):
+def create_user(db: Session, form_data: SignUpUser):
     query = models.User(role_id=form_data.role_id,
                         fullname=form_data.fullname,
                         email=form_data.email
@@ -95,6 +98,7 @@ def create_user(db: Session, form_data):
         return query
 
 
+# ----------------------- MEETINGS OPERATIONS ------------------------------------
 def get_all_meetings(db: Session):
     query = db.query(models.Meeting).all()
     return query
@@ -128,6 +132,7 @@ def create_meeting(db: Session, form_data: CreateMeeting):
         return query
 
 
+# ----------------------- INVITATIONS OPERATIONS ------------------------------------
 def get_all_user_invitations(user_id, db: Session):
     query = db.query(models.Meeting).filter(models.Invitation.user_id == user_id)
     return query

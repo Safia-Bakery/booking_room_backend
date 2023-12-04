@@ -8,7 +8,7 @@ from schemas.schemas import *
 from crud import crud
 from fastapi.exceptions import HTTPException
 
-from utils.utils import get_db
+from utils.utils import get_db, get_current_user
 
 
 admin_router = APIRouter(
@@ -19,7 +19,7 @@ admin_router = APIRouter(
 
 # --------------------- Actions with ROLES --------------------------
 @admin_router.get("/roles", response_model=List[GetUserRole], status_code=200)
-async def get_roles(db: Session = Depends(get_db)):
+async def get_roles(db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
     return crud.get_all_roles(db=db)
 
 

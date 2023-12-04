@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict, EmailStr
-# from config.config import SECRET_KEY
+from config.config import SECRET_KEY
 
 
 # pattern = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
@@ -49,7 +49,7 @@ class SignUpUser(BaseModel):
 
 
 class LoginUser(BaseModel):
-    email: str
+    email: EmailStr
 
 
 class GetMeeting(TunedModel):
@@ -85,9 +85,9 @@ class CreateInvitation(BaseModel):
     room_id: int
 
 
-# class Token(BaseModel):
-#     access_token: str = SECRET_KEY
-#     token_type: str
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 
 class TokenData(BaseModel):
