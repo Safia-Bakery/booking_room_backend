@@ -78,12 +78,12 @@ def get_user(id, db: Session):
     return query
 
 
-def login_user(db: Session, user: LoginUser):
-    query = db.query(models.User).filter(models.User.email == user.email).first()
+def check_email(db: Session, email):
+    query = db.query(models.User).filter(models.User.email == email).first()
     return query
 
 
-def create_user(db: Session, form_data: SignUpUser):
+def create_user(db: Session, form_data: LoginUser):
     query = models.User(role_id=form_data.role_id,
                         fullname=form_data.fullname,
                         email=form_data.email

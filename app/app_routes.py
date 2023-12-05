@@ -1,16 +1,24 @@
 import re
 from typing import List
-from fastapi import APIRouter, Depends, Response, status, HTTPException
+from fastapi import APIRouter, Depends, Response, status, HTTPException, Request
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
+from starlette.templating import Jinja2Templates
+
 from schemas.schemas import *
 from crud import crud
 from utils.utils import get_db
 from datetime import datetime, date
 
 app_router = APIRouter(
-    prefix='/app',
     tags=['app']
 )
+templates = Jinja2Templates(directory="templates")
+
+
+@app_router.get('/app')
+async def home_page(request: Request):
+    return templates.TemplateResponse(name="home.html", context={"request": request})
 
 
 # ----------------------- Actions with ROOMS ------------------------

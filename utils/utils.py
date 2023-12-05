@@ -1,12 +1,19 @@
 from datetime import datetime, timedelta
 from typing import Annotated
-
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Security
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer
+from google.auth.transport import requests
+from google.oauth2 import id_token
 from jose import JWTError, jwt
-from config.config import SECRET_KEY, ALGORITHM
+from jwt import PyJWTError
+from sqlalchemy.orm import Session
+from starlette import status
+import os
+from config.config import SECRET_KEY, ALGORITHM, GOOGLE_CLIENT_ID, ACCESS_TOKEN_EXPIRE_MINUTES
 from config.db import SessionLocal
-from schemas.schemas import TokenData
+from crud import crud
+from schemas.schemas import TokenData, LoginUser, GetUser
 
 
 def get_db():
@@ -17,38 +24,104 @@ def get_db():
         db.close()
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")  # there can be any 3rd party url (Google, Yandex, etc.)
+# Helper to read numbers using var envs
+def cast_to_number(id):
+    temp = os.environ.get(id)
+    if temp is not None:
+        try:
+            return float(temp)
+        except ValueError:
+            return None
+    return None
 
 
+
+SECRET_KEY = SECRET_KEY or None
+
+if SECRET_KEY is None:
+    raise 'Missing API_SECRET_KEY env var.'
+
+ALGORITHM = ALGORITHM or 'HS256'
+ACCESS_TOKEN_EXPIRE_MINUTES = int(ACCESS_TOKEN_EXPIRE_MINUTES) or 15
+
+# Token url (We should later create a token url that accepts just a user and a password to use it with Swagger)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/token')
+
+# Error
+CREDENTIALS_EXCEPTION = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Could not validate credentials',
+    headers={'WWW-Authenticate': 'Bearer'},
+)
+
+
+# def create_access_token(data: dict, expires_delta: timedelta | None = None):
+#     to_encode = data.copy()
+#     if expires_delta:
+#         expire = datetime.utcnow() + expires_delta
+#     else:
+#         expire = datetime.utcnow() + timedelta(minutes=15)
+#     to_encode.update({"exp": expire})
+#     encoded_jwt = jwt.encode(to_encode, str(SECRET_KEY), algorithm=ALGORITHM)
+#     return encoded_jwt
+
+
+# Create token internal function
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, str(SECRET_KEY), algorithm=ALGORITHM)
+    to_encode.update({'exp': expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
-def verify_token(token: str, credentials_exception):
+# Create token for an email
+def create_token(email):
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={'sub': email}, expires_delta=access_token_expires)
+    return access_token
+
+
+def valid_email_from_db(email, db: Session = Depends(get_db)):
+    return crud.check_email(db=db, email=email)
+
+
+async def get_current_user_email(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
+        email: str = payload.get('sub')
         if email is None:
-            raise credentials_exception
-        token_data = TokenData(email=email)
+            raise CREDENTIALS_EXCEPTION
     except JWTError:
-        raise credentials_exception
+        raise CREDENTIALS_EXCEPTION
+
+    if valid_email_from_db(email=email):
+        return email
+
+    raise CREDENTIALS_EXCEPTION
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    return verify_token(token=token, credentials_exception=credentials_exception)
+# def verify_token(token: str, credentials_exception):
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         email: str = payload.get("sub")
+#         if email is None:
+#             raise credentials_exception
+#         token_data = TokenData(email=email)
+#     except JWTError:
+#         raise credentials_exception
+
+
+# async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+#     credentials_exception = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Could not validate credentials",
+#         headers={"WWW-Authenticate": "Bearer"},
+#     )
+#     return verify_token(token=token, credentials_exception=credentials_exception)
 
 
 # async def get_current_active_user(
@@ -59,3 +132,15 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 #     return current_user
 
 
+async def google_auth(user: LoginUser, db: Session = Depends(get_db)):
+    print("########### Token ##########\n", user.token)
+    try:
+        id_info = id_token.verify_oauth2_token(user.token, requests.Request(), GOOGLE_CLIENT_ID)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bad code")
+    created_user = crud.create_user(db=db, form_data=user)
+    if not created_user:
+        raise HTTPException(status_code=status.HTTP_302_FOUND, detail='User with the email already exists!')
+    access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
+    return {"user_id": user.id, "access_token": jsonable_encoder(access_token), "token_type": "GoogleOAuth2"}

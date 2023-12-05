@@ -1,21 +1,50 @@
-from typing import List
+import uvicorn
+from starlette.middleware.sessions import SessionMiddleware
+from fastapi import FastAPI, status, Request
+from starlette.responses import HTMLResponse
+from app.app_routes import app_router
+from admin.admin_routes import admin_router
+from auth.auth_routes import auth_router
+from config.config import SECRET_KEY
+from auth.auth import auth_app
+from app.app import app
+from admin.admin import admin_app
+from fastapi.middleware.cors import CORSMiddleware
 
-from fastapi import FastAPI
-from routers.app_routes import app_router
-from routers.auth_routes import auth_router
-from routers.admin_routes import admin_router
+
+main_app = FastAPI(title="Book Meeting")
+
+main_app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+main_app.mount(path='/app', app=app)
+main_app.mount(path='/auth', app=auth_app)
+main_app.mount(path='/admin', app=admin_app)
 
 
-app = FastAPI(
-    title="Book Meeting"
+if SECRET_KEY is None:
+    raise 'Missing SECRET_KEY'
+
+
+main_app.include_router(app_router)
+main_app.include_router(auth_router)
+main_app.include_router(admin_router)
+
+
+ALLOWED_HOSTS = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_HOSTS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
-# @AuthJWT.load_config
-# def get_config():
-#     return Settings()
-
-
-app.include_router(admin_router)
-app.include_router(auth_router)
-app.include_router(app_router)
+if __name__ == "__main__":
+    uvicorn.run(
+        app="main:main_app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True
+    )

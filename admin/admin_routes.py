@@ -1,6 +1,8 @@
 import re
 from typing import List
 from fastapi import APIRouter, status, Depends
+from starlette.responses import JSONResponse
+
 from config.db import SessionLocal
 from sqlalchemy.orm import Session
 from models.models import UserRole, User
@@ -8,18 +10,23 @@ from schemas.schemas import *
 from crud import crud
 from fastapi.exceptions import HTTPException
 
-from utils.utils import get_db, get_current_user
+# from utils.utils import get_db, get_current_user
+from utils.utils import get_db
 
 
 admin_router = APIRouter(
-    prefix='/admin',
     tags=['admin']
 )
 
 
+@admin_router.get('/admin')
+def test():
+    return JSONResponse({'message': 'admin_routes'})
+
+
 # --------------------- Actions with ROLES --------------------------
 @admin_router.get("/roles", response_model=List[GetUserRole], status_code=200)
-async def get_roles(db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
+async def get_roles(db: Session = Depends(get_db)):  # current_user: GetUser = Depends(get_current_user)
     return crud.get_all_roles(db=db)
 
 

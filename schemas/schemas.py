@@ -43,8 +43,9 @@ class GetUser(TunedModel):
 
 
 class SignUpUser(BaseModel):
-    role_id: int
-    fullname: str
+    id: Optional[int]
+    role_id: Optional[int] = None
+    fullname: Optional[str]
     email: EmailStr
 
 
@@ -86,9 +87,8 @@ class CreateInvitation(BaseModel):
 
 
 class Token(BaseModel):
-    client_id: int
-    access_token: str
-    token_type: str
+    id: int
+    token: str
 
 
 class TokenData(BaseModel):
