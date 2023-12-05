@@ -45,11 +45,11 @@ class GetUser(TunedModel):
 class SignUpUser(BaseModel):
     role_id: int
     fullname: str
-    email: str
-
-
-class LoginUser(BaseModel):
     email: EmailStr
+
+
+class LoginUser(SignUpUser):
+    token: str
 
 
 class GetMeeting(TunedModel):
@@ -86,6 +86,7 @@ class CreateInvitation(BaseModel):
 
 
 class Token(BaseModel):
+    client_id: int
     access_token: str
     token_type: str
 

@@ -17,7 +17,7 @@ def get_db():
         db.close()
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # there can be any 3rd party url (Google, Yandex, etc.)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")  # there can be any 3rd party url (Google, Yandex, etc.)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -57,3 +57,5 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 #     if current_user.disabled:
 #         raise HTTPException(status_code=400, detail="Inactive user")
 #     return current_user
+
+

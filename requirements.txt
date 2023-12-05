@@ -3,3 +3,5 @@ alembic
 uvicorn
 psycopg2
 python-jose
+requests
+google-auth
