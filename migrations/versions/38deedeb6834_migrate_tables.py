@@ -1,8 +1,8 @@
-"""Migrate database and tables
+"""Migrate tables
 
-Revision ID: 1b6359c2637a
+Revision ID: 38deedeb6834
 Revises: 
-Create Date: 2023-12-04 14:20:52.332216
+Create Date: 2023-12-06 12:27:33.937640
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1b6359c2637a'
+revision: str = '38deedeb6834'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -34,7 +34,7 @@ def upgrade() -> None:
     sa.UniqueConstraint('name')
     )
     op.create_table('users',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('id', sa.String(), nullable=False),
     sa.Column('role_id', sa.Integer(), nullable=True),
     sa.Column('fullname', sa.String(), nullable=False),
     sa.Column('email', sa.String(), nullable=False),
@@ -47,7 +47,7 @@ def upgrade() -> None:
     op.create_table('meetings',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('room_id', sa.Integer(), nullable=False),
-    sa.Column('organized_by', sa.Integer(), nullable=False),
+    sa.Column('organized_by', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('start_time', sa.DateTime(), nullable=False),
@@ -59,7 +59,7 @@ def upgrade() -> None:
     )
     op.create_table('invitations',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('meeting_id', sa.Integer(), nullable=False),
     sa.Column('room_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['meeting_id'], ['meetings.id'], ),

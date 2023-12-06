@@ -13,7 +13,7 @@ import os
 from config.config import SECRET_KEY, ALGORITHM, GOOGLE_CLIENT_ID, ACCESS_TOKEN_EXPIRE_MINUTES
 from config.db import SessionLocal
 from crud import crud
-from schemas.schemas import TokenData, LoginUser, GetUser
+from schemas.schemas import TokenData, GoogleToken, GetUser, CreateUser
 
 
 def get_db():
@@ -35,7 +35,6 @@ def cast_to_number(id):
     return None
 
 
-
 SECRET_KEY = SECRET_KEY or None
 
 if SECRET_KEY is None:
@@ -43,6 +42,7 @@ if SECRET_KEY is None:
 
 ALGORITHM = ALGORITHM or 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = int(ACCESS_TOKEN_EXPIRE_MINUTES) or 15
+access_token_jwt_subject = "access"
 
 # Token url (We should later create a token url that accepts just a user and a password to use it with Swagger)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/token')
@@ -73,16 +73,22 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({'exp': expire})
+    to_encode.update({'exp': expire, "sub": access_token_jwt_subject})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 # Create token for an email
-def create_token(email):
+# def create_token(email):
+#     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+#     access_token = create_access_token(data={'sub': email}, expires_delta=access_token_expires)
+#     return access_token
+
+# Create token for user id
+def create_token(user_id: int):
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={'sub': email}, expires_delta=access_token_expires)
-    return access_token
+    access_token = create_access_token(data={'user_id': user_id}, expires_delta=access_token_expires)
+    return {"access_token": access_token, "token_type": "Token"}
 
 
 def valid_email_from_db(email, db: Session = Depends(get_db)):
@@ -104,15 +110,15 @@ async def get_current_user_email(token: str = Depends(oauth2_scheme)):
     raise CREDENTIALS_EXCEPTION
 
 
-# def verify_token(token: str, credentials_exception):
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         email: str = payload.get("sub")
-#         if email is None:
-#             raise credentials_exception
-#         token_data = TokenData(email=email)
-#     except JWTError:
-#         raise credentials_exception
+def verify_token(token: str, credentials_exception):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+        token_data = TokenData(email=email)
+    except JWTError:
+        raise credentials_exception
 
 
 # async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
@@ -132,15 +138,18 @@ async def get_current_user_email(token: str = Depends(oauth2_scheme)):
 #     return current_user
 
 
-async def google_auth(user: LoginUser, db: Session = Depends(get_db)):
+async def google_auth(user: CreateUser, token: GoogleToken, db: Session = Depends(get_db)):
     print("########### Token ##########\n", user.token)
     try:
-        id_info = id_token.verify_oauth2_token(user.token, requests.Request(), GOOGLE_CLIENT_ID)
+        id_info = id_token.verify_oauth2_token(token.token, requests.Request(), GOOGLE_CLIENT_ID)
+        print("There ERROR")
     except ValueError:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bad code")
-    created_user = crud.create_user(db=db, form_data=user)
+    created_user = crud.add_user(db=db, form_data=user)
     if not created_user:
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail='User with the email already exists!')
-    access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
-    access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
-    return {"user_id": user.id, "access_token": jsonable_encoder(access_token), "token_type": "GoogleOAuth2"}
+    # access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    # access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
+    # return {"user_id": created_user.id, "access_token": jsonable_encoder(access_token), "token_type": "GoogleOAuth2"}
+    access_token = create_token(created_user.id)
+    return created_user.id, access_token.get("access_token")

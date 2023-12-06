@@ -27,7 +27,7 @@ class UserRole(Base):
 
 class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    id = Column(String, primary_key=True, nullable=False)
     role_id = Column(Integer, ForeignKey("roles.id", ondelete='CASCADE'), nullable=True)
     fullname = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
@@ -50,7 +50,7 @@ class Meeting(Base):
     __tablename__ = 'meetings'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
-    organized_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    organized_by = Column(String, ForeignKey("users.id"), nullable=False)
     name = Column(String, nullable=True)
     description = Column(Text, nullable=True)
     start_time = Column(DateTime, nullable=False)
@@ -64,7 +64,7 @@ class Meeting(Base):
 class Invitation(Base):
     __tablename__ = 'invitations'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
     meeting_id = Column(Integer, ForeignKey("meetings.id"), nullable=False)
     room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
     user = relationship('User', back_populates='invitation')

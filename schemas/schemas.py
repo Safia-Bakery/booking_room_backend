@@ -1,6 +1,8 @@
 import re
 from datetime import datetime
 from typing import List, Optional, Union
+
+from fastapi.params import Form
 from pydantic import BaseModel, ConfigDict, EmailStr
 from config.config import SECRET_KEY
 
@@ -42,14 +44,14 @@ class GetUser(TunedModel):
     update_date: datetime = datetime.now()
 
 
-class SignUpUser(BaseModel):
-    id: Optional[int]
+class CreateUser(BaseModel):
+    id: int
     role_id: Optional[int] = None
     fullname: Optional[str]
     email: EmailStr
 
 
-class LoginUser(SignUpUser):
+class GoogleToken(BaseModel):
     token: str
 
 
@@ -86,7 +88,7 @@ class CreateInvitation(BaseModel):
     room_id: int
 
 
-class Token(BaseModel):
+class Token(TunedModel):
     id: int
     token: str
 

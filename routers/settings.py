@@ -1,7 +1,7 @@
 import os
 from starlette.config import Config
 from authlib.integrations.starlette_client import OAuth
-from config.config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+from config.config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SECRET_KEY
 
 
 # OAuth settings
@@ -19,11 +19,11 @@ oauth.register(
 )
 
 # Set up the middleware to read the request session
-SECRET_KEY = os.environ.get('SECRET_KEY') or None
+# SECRET_KEY = os.environ.get('SECRET_KEY') or None
 if SECRET_KEY is None:
     raise 'Missing SECRET_KEY'
 
+
 # Frontend URL:
 FRONTEND_URL = 'http://127.0.0.1:8000/auth/token'
-
 

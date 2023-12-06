@@ -83,10 +83,10 @@ def check_email(db: Session, email):
     return query
 
 
-def create_user(db: Session, form_data: LoginUser):
-    query = models.User(role_id=form_data.role_id,
-                        fullname=form_data.fullname,
-                        email=form_data.email
+def create_user(db: Session, form_data):
+    query = models.User(id=form_data['sub'],
+                        fullname=form_data['name'],
+                        email=form_data['email']
                         )
     try:
         db.add(query)
@@ -96,6 +96,22 @@ def create_user(db: Session, form_data: LoginUser):
         db.rollback()
     else:
         return query
+
+
+def add_user(db: Session, form_data):
+    query = db.query(models.User).filter(models.User.email == form_data['email']).first()
+    if query:
+        return query
+
+    query = models.User(id=form_data['id'],
+                        fullname=form_data['name'],
+                        email=form_data['email']
+                        )
+    db.add(query)
+    db.commit()
+    db.refresh(query)
+    return query
+
 
 
 # ----------------------- MEETINGS OPERATIONS ------------------------------------
