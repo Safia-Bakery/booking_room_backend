@@ -2,14 +2,8 @@ import uvicorn
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi import FastAPI, status, Request
 from starlette.responses import HTMLResponse
-# from app.app_routes import app_router
 from routers import app_routes, admin_routes, auth_routes
-# from admin.admin_routes import admin_router
-# from auth.auth_routes import auth_router
 from config.config import SECRET_KEY
-# from auth.auth import auth_app
-# from app.app import app
-# from admin.admin import admin_app
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -33,13 +27,13 @@ main_app.include_router(admin_routes.admin_router)
 
 ALLOWED_HOSTS = ["*"]
 
-# main_app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=ALLOWED_HOSTS,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+main_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_HOSTS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 if __name__ == "__main__":

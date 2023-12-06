@@ -88,7 +88,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def create_token(user_id: int):
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={'user_id': user_id}, expires_delta=access_token_expires)
-    return {"access_token": access_token, "token_type": "Token"}
+    return {"token": access_token, "token_type": "Bearer"}
 
 
 def valid_email_from_db(email, db: Session = Depends(get_db)):
