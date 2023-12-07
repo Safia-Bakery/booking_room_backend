@@ -89,8 +89,9 @@ class CreateInvitation(BaseModel):
 
 
 class Token(TunedModel):
-    id: int
+    email: str
     token: str
+    token_type: str
 
 
 class TokenData(BaseModel):

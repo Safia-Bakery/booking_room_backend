@@ -6,7 +6,7 @@ from starlette.responses import RedirectResponse, JSONResponse, HTMLResponse
 from authlib.integrations.starlette_client import OAuthError
 from crud import crud
 from schemas.schemas import CreateUser, Token, GoogleToken
-from utils.utils import CREDENTIALS_EXCEPTION, valid_email_from_db, get_db, create_token, get_current_user_email, google_auth
+from utils.utils import CREDENTIALS_EXCEPTION, valid_email_from_db, get_db, create_token, get_current_user
 import requests
 
 
@@ -45,10 +45,10 @@ templates = Jinja2Templates(directory="templates")
 async def auth(google_token: GoogleToken, db: Session = Depends(get_db)):
     user_info = requests.get(f"https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token={google_token.token}")
     user_dict = user_info.json()
-    user_obj = crud.add_user(db=db, form_data=user_dict)
+    user_obj = crud.get_or_create_user(db=db, form_data=user_dict)
     if user_obj:
-        jwt_token = create_token(user_dict['id'])
-        return JSONResponse({'user_id': user_dict['id'], 'jwt_token': jwt_token})
+        jwt_token = create_token(user_dict['email'])
+        return JSONResponse({'email': user_dict['email'], 'jwt_token': jwt_token, "token_type": "Bearer"})
 
 
 @auth_router.get('/logout', status_code=status.HTTP_200_OK)
@@ -56,12 +56,3 @@ async def logout(request: Request):
     request.session.pop('user', None)
     return RedirectResponse(url='/')
 
-
-@auth_router.get('/unprotected')
-def test():
-    return {'message': 'unprotected api_app endpoint'}
-
-
-@auth_router.get('/protected')
-def test2(current_email: str = Depends(get_current_user_email)):
-    return {'message': 'protected api_app endpoint'}

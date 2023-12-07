@@ -73,8 +73,8 @@ def get_all_users(db: Session):
 
 
 def get_user(id, db: Session):
-    # query = db.query(models.User).get(id)
-    query = db.query(models.User).filter(models.User.id == id).first()
+    query = db.query(models.User).get(id)
+    # query = db.query(models.User).filter(models.User.id == id).first()
     return query
 
 
@@ -98,7 +98,7 @@ def create_user(db: Session, form_data):
         return query
 
 
-def add_user(db: Session, form_data):
+def get_or_create_user(db: Session, form_data):
     query = db.query(models.User).filter(models.User.email == form_data['email']).first()
     if query:
         return query
@@ -111,7 +111,6 @@ def add_user(db: Session, form_data):
     db.commit()
     db.refresh(query)
     return query
-
 
 
 # ----------------------- MEETINGS OPERATIONS ------------------------------------
@@ -150,19 +149,20 @@ def create_meeting(db: Session, form_data: CreateMeeting):
 
 # ----------------------- INVITATIONS OPERATIONS ------------------------------------
 def get_all_user_invitations(user_id, db: Session):
-    query = db.query(models.Meeting).filter(models.Invitation.user_id == user_id)
+    query = db.query(models.Invitation).filter(models.Invitation.user_id == user_id)
     return query
 
 
-def create_invitations(db: Session, form_data: CreateInvitation):
-    for id in form_data.user_id:
-        query = models.Invitation(user_id=id,
-                                  meeting_id=form_data.meeting_id,
-                                  room_id=form_data.room_id
-                                  )
-        try:
-            db.add(query)
-            db.commit()
-            db.refresh(query)
-        except IntegrityError:
-            db.rollback()
+def create_invitations(db: Session, user_id, meeting_id, room_id):
+    query = models.Invitation(user_id=user_id,
+                              meeting_id=meeting_id,
+                              room_id=room_id
+                              )
+    try:
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+    except IntegrityError:
+        db.rollback()
+    else:
+        return query
