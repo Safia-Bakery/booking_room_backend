@@ -1,12 +1,7 @@
 from datetime import datetime, timedelta
-from typing import Annotated
 from fastapi import Depends, HTTPException, status, Security
-from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer
-from google.auth.transport import requests
-from google.oauth2 import id_token
 from jose import JWTError, jwt
-from jwt import PyJWTError
 from sqlalchemy.orm import Session
 from starlette import status
 import os
@@ -183,18 +178,18 @@ async def email_sender(receivers, organizer, room, meeting_name, start_time, end
 #     return current_user
 
 
-async def google_auth(user: CreateUser, token: GoogleToken, db: Session = Depends(get_db)):
-    print("########### Token ##########\n", user.token)
-    try:
-        id_info = id_token.verify_oauth2_token(token.token, requests.Request(), GOOGLE_CLIENT_ID)
-        print("There ERROR")
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bad code")
-    created_user = crud.get_or_create_user(db=db, form_data=user)
-    if not created_user:
-        raise HTTPException(status_code=status.HTTP_302_FOUND, detail='User with the email already exists!')
-    # access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
-    # access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
-    # return {"user_id": created_user.id, "access_token": jsonable_encoder(access_token), "token_type": "GoogleOAuth2"}
-    access_token = create_token(created_user.id)
-    return created_user.id, access_token
+# async def google_auth(user: CreateUser, token: GoogleToken, db: Session = Depends(get_db)):
+#     print("########### Token ##########\n", user.token)
+#     try:
+#         id_info = id_token.verify_oauth2_token(token.token, requests.Request(), GOOGLE_CLIENT_ID)
+#         print("There ERROR")
+#     except ValueError:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bad code")
+#     created_user = crud.get_or_create_user(db=db, form_data=user)
+#     if not created_user:
+#         raise HTTPException(status_code=status.HTTP_302_FOUND, detail='User with the email already exists!')
+#     # access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+#     # access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
+#     # return {"user_id": created_user.id, "access_token": jsonable_encoder(access_token), "token_type": "GoogleOAuth2"}
+#     access_token = create_token(created_user.id)
+#     return created_user.id, access_token

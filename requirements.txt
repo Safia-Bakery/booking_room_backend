@@ -1,9 +1,6 @@
 fastapi[all]
 alembic
 uvicorn
-psycopg2
+psycopg2-binary
 python-jose
 requests
-google-auth
-authlib
-itsdangerous

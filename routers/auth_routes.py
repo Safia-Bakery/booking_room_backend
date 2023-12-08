@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Request, status, Depends
 from sqlalchemy.orm import Session
 from starlette.templating import Jinja2Templates
-from routers.settings import oauth, FRONTEND_URL
+# from routers.settings import oauth, FRONTEND_URL
 from starlette.responses import RedirectResponse, JSONResponse, HTMLResponse
-from authlib.integrations.starlette_client import OAuthError
+# from authlib.integrations.starlette_client import OAuthError
 from crud import crud
-from schemas.schemas import CreateUser, Token, GoogleToken
-from utils.utils import CREDENTIALS_EXCEPTION, valid_email_from_db, get_db, create_token, get_current_user
+from schemas.schemas import Token, GoogleToken
+from utils.utils import get_db, create_token
 import requests
 
 
