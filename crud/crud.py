@@ -129,6 +129,11 @@ def get_meeting(id, db: Session):
     return query
 
 
+def get_all_user_meetings(user_id, db: Session):
+    query = db.query(models.Meeting).filter(models.Meeting.organized_by == user_id)
+    return query
+
+
 def create_meeting(db: Session, form_data: CreateMeeting):
     query = models.Meeting(room_id=form_data.room_id,
                            organized_by=form_data.organized_by,
@@ -147,16 +152,27 @@ def create_meeting(db: Session, form_data: CreateMeeting):
         return query
 
 
+def delete_meeting(id, db: Session):
+    query = db.query(models.Meeting).filter(models.Meeting.id == id).delete(synchronize_session=False)
+    db.commit()
+    return query
+
+
+def update_meeting(id, meeting: CreateMeeting, db: Session):
+    obj = db.query(models.Meeting).filter(models.Meeting.id == id).update(dict(meeting))
+    db.commit()
+    return obj
+
+
 # ----------------------- INVITATIONS OPERATIONS ------------------------------------
 def get_all_user_invitations(user_id, db: Session):
     query = db.query(models.Invitation).filter(models.Invitation.user_id == user_id)
     return query
 
 
-def create_invitations(db: Session, user_id, meeting_id, room_id):
+def create_invitations(db: Session, user_id, meeting_id):
     query = models.Invitation(user_id=user_id,
-                              meeting_id=meeting_id,
-                              room_id=room_id
+                              meeting_id=meeting_id
                               )
     try:
         db.add(query)

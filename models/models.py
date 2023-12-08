@@ -66,7 +66,5 @@ class Invitation(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     meeting_id = Column(Integer, ForeignKey("meetings.id"), nullable=False)
-    room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
     user = relationship('User', back_populates='invitation')
     meeting = relationship('Meeting', back_populates='invitation')
-    room = relationship('Room', back_populates='invitation')

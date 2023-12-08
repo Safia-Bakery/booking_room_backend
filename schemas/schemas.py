@@ -59,6 +59,7 @@ class GetMeeting(TunedModel):
     id: int
     room_id: int
     organized_by: int
+    invited_users: List[str]
     name: str
     description: str
     start_time: datetime
@@ -67,8 +68,10 @@ class GetMeeting(TunedModel):
 
 
 class CreateMeeting(BaseModel):
+    id: Optional[int]
     room_id: int
     organized_by: int
+    invited_users: List[str]
     name: Optional[str]
     description: Optional[str]
     start_time: datetime
@@ -79,13 +82,11 @@ class GetInvitation(TunedModel):
     id: int
     user: GetUser
     meeting: GetMeeting
-    room: GetRoom
 
 
 class CreateInvitation(BaseModel):
-    user_id: List[int]
+    user_id: str
     meeting_id: int
-    room_id: int
 
 
 class Token(TunedModel):
