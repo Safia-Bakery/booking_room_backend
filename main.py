@@ -37,7 +37,7 @@ main_app.include_router(admin_routes.admin_router)
 if __name__ == "__main__":
     uvicorn.run(
         app="main:main_app",
-        host="127.0.0.1",
+        host="109.94.172.144",
         port=8000,
         reload=True
     )
