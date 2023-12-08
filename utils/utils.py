@@ -69,7 +69,7 @@ CREDENTIALS_EXCEPTION = HTTPException(
 
 
 # Create token internal function
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
