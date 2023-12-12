@@ -5,8 +5,9 @@ from starlette.templating import Jinja2Templates
 from starlette.responses import RedirectResponse, JSONResponse, HTMLResponse
 # from authlib.integrations.starlette_client import OAuthError
 from crud import crud
+# from routers.settings import oauth
 from schemas.schemas import Token, GoogleToken
-from utils.utils import get_db, create_token
+from utils.utils import get_db, create_token, CREDENTIALS_EXCEPTION
 import requests
 
 
@@ -19,7 +20,7 @@ templates = Jinja2Templates(directory="templates")
 
 # @auth_router.get('/signup')
 # async def login(request: Request):
-#     redirect_uri = FRONTEND_URL  # This creates the url for our /auth endpoint
+#     redirect_uri = 'http://127.0.0.1:8000/auth/token'  # This creates the url for our /auth endpoint
 #     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
@@ -27,9 +28,10 @@ templates = Jinja2Templates(directory="templates")
 # async def auth(request: Request, db: Session = Depends(get_db)):
 #     try:
 #         access_token = await oauth.google.authorize_access_token(request)
+#         print("GOOGLE TOKEN:\n", access_token)
 #     except OAuthError:
 #         raise CREDENTIALS_EXCEPTION
-#     # user_data = await oauth.google.parse_id_token(request, access_token)
+#     user_data = await oauth.google.parse_id_token(request, access_token)
 #     if valid_email_from_db(email=access_token['userinfo']['email'], db=db):
 #         # TODO: validate email in our database and generate JWT token
 #         jwt_token = create_token(access_token['userinfo']['email'])

@@ -1,8 +1,9 @@
 import uvicorn
-from starlette.middleware.sessions import SessionMiddleware
+# from starlette.middleware.sessions import SessionMiddleware
 from fastapi import FastAPI, status, Request
 from routers import app_routes, admin_routes, auth_routes
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
+# from config.config import SECRET_KEY
 
 
 main_app = FastAPI(title="Book Meeting Room")
@@ -24,7 +25,6 @@ main_app.include_router(admin_routes.admin_router)
 
 
 # ALLOWED_HOSTS = ["*"]
-#
 # main_app.add_middleware(
 #     CORSMiddleware,
 #     allow_origins=ALLOWED_HOSTS,

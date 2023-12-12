@@ -1,9 +1,5 @@
-import re
-from typing import List
-from fastapi import APIRouter, Depends, Response, status, HTTPException, Request
+from fastapi import APIRouter, Depends, Response, status, HTTPException
 from sqlalchemy.orm import Session
-from starlette.responses import JSONResponse
-from starlette.templating import Jinja2Templates
 
 from schemas.schemas import *
 from crud import crud

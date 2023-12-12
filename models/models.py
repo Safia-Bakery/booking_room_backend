@@ -28,7 +28,7 @@ class UserRole(Base):
 class User(Base):
     __tablename__ = 'users'
     id = Column(String, primary_key=True, nullable=False)
-    role_id = Column(Integer, ForeignKey("roles.id", ondelete='CASCADE'), nullable=True)
+    role_id = Column(Integer, ForeignKey("roles.id", ondelete='CASCADE'), nullable=True, default=None)
     fullname = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     reg_date = Column(DateTime, default=func.now())
@@ -43,7 +43,6 @@ class Room(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     name = Column(String, unique=True, nullable=False)
     meeting = relationship('Meeting', back_populates='room')
-    invitation = relationship('Invitation', back_populates='room')
 
 
 class Meeting(Base):
