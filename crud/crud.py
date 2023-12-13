@@ -120,7 +120,7 @@ def get_all_meetings(db: Session):
 
 
 def get_all_meetings_of_room_by_date(room_id, date, db: Session):
-    query = db.query(models.Meeting).filter(models.Meeting.room_id == room_id).filter(models.Meeting.start_time.cast(Date) == date)
+    query = db.query(models.Meeting).filter(models.Meeting.room_id == room_id).filter(cast(models.Meeting.start_time, Date) == date)
     return query
 
 

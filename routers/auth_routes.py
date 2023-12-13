@@ -45,8 +45,10 @@ templates = Jinja2Templates(directory="templates")
 
 @auth_router.post("/login", status_code=status.HTTP_200_OK, response_model=Token)
 async def auth(google_token: GoogleToken, db: Session = Depends(get_db)):
+    print(google_token.token)
     user_info = requests.get(f"https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token={google_token.token}")
     user_dict = user_info.json()
+    print(user_dict)
     user_obj = crud.get_or_create_user(db=db, form_data=user_dict)
     if user_obj:
         jwt_token = create_token(user_dict['email'])
