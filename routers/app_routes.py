@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Response, status, HTTPException
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 
 from schemas.schemas import *
 from crud import crud
@@ -10,6 +11,12 @@ app_router = APIRouter(
     prefix='/app',
     tags=['app']
 )
+
+
+# ----------------------- Actions with USERS ------------------------
+@app_router.get("/users", response_model=List[GetUser], status_code=200)
+async def get_users(db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
+    return crud.get_all_users(db=db)
 
 
 # ----------------------- Actions with ROOMS ------------------------
@@ -34,8 +41,19 @@ def get_meetings_of_room(room_id: int, query_date: date, db: Session = Depends(g
                          current_user: GetUser = Depends(get_current_user)):
     specific_meetings = crud.get_all_meetings_of_room_by_date(room_id=room_id, date=query_date, db=db)
     if not specific_meetings:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Planed meetings not found!")
+        # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Planed meetings not found!")
+        return JSONResponse([])
     return specific_meetings
+
+
+@app_router.get("/meetings/{id}", response_model=GetMeeting, status_code=200)
+async def get_meeting(id: int, response: Response, db: Session = Depends(get_db),
+                      current_user: GetUser = Depends(get_current_user)):
+    meeting = crud.get_meeting(id=id, db=db)
+    if not meeting:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meeting with the id not found!")
+    return meeting
 
 
 @app_router.get("/my-meetings", response_model=List[GetInvitation])
@@ -46,15 +64,18 @@ async def get_own_meetings(db: Session = Depends(get_db), current_user: GetUser 
 @app_router.post("/meetings", response_model=CreateMeeting, status_code=201)
 async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db),
                          current_user: GetUser = Depends(get_current_user)):
-    created_meeting = crud.create_meeting(db=db, form_data=form_data)
-    if not created_meeting:
-        raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The meeting with id already exists!")
-    email_receivers = [current_user.email]
-    for id in form_data.invited_users:
-        created_invitation = crud.create_invitations(db=db, user_id=id, meeting_id=form_data.id)
+    existed_meeting = crud.check_meeting(db=db, form_data=form_data)
+    if existed_meeting:
+        raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The meeting with the time period already exists!")
+    created_meeting = crud.create_meeting(db=db, form_data=form_data, creator=current_user.id)
+    email_receivers = []
+    if not form_data.invited_users:
+        return created_meeting
+    for user_email in form_data.invited_users:
+        created_invitation = crud.create_invitations(db=db, user_email=user_email, meeting_id=form_data.id)
         if not created_invitation:
             raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The invitation with id already exists!")
-        user_email = crud.get_user(id=id, db=db).email
+        # user_email = crud.get_user(id=user_email, db=db).email
         email_receivers.append(user_email)
     room = crud.get_room(id=form_data.room_id, db=db).name
     meeting_name = crud.get_meeting(id=form_data.id, db=db).name

@@ -120,7 +120,8 @@ def get_all_meetings(db: Session):
 
 
 def get_all_meetings_of_room_by_date(room_id, date, db: Session):
-    query = db.query(models.Meeting).filter(models.Meeting.room_id == room_id).filter(cast(models.Meeting.start_time, Date) == date)
+    query = db.query(models.Meeting).filter(models.Meeting.room_id == room_id).filter(and_(cast(models.Meeting.start_time, Date) == date,
+                                                                                           cast(models.Meeting.end_time, Date) == date))
     return query
 
 
@@ -129,27 +130,34 @@ def get_meeting(id, db: Session):
     return query
 
 
+def check_meeting(db: Session, form_data: CreateMeeting):
+    query = db.query(models.Meeting).filter(and_(models.Meeting.room_id == form_data.room_id,
+                                                 models.Meeting.start_time == form_data.start_time,
+                                                 models.Meeting.end_time == form_data.end_time,
+                                                 )
+                                            ).first()
+    if query:
+        return query
+
+
 def get_all_user_meetings(user_id, db: Session):
     query = db.query(models.Meeting).filter(models.Meeting.organized_by == user_id)
     return query
 
 
-def create_meeting(db: Session, form_data: CreateMeeting):
+def create_meeting(db: Session, form_data: CreateMeeting, creator):
     query = models.Meeting(room_id=form_data.room_id,
-                           organized_by=form_data.organized_by,
+                           created_by=creator,
+                           organizer=form_data.organizer,
                            name=form_data.name,
                            description=form_data.description,
                            start_time=form_data.start_time,
                            end_time=form_data.end_time
                            )
-    try:
-        db.add(query)
-        db.commit()
-        db.refresh(query)
-    except IntegrityError:
-        db.rollback()
-    else:
-        return query
+    db.add(query)
+    db.commit()
+    db.refresh(query)
+    return query
 
 
 def delete_meeting(id, db: Session):
@@ -170,8 +178,8 @@ def get_all_user_invitations(user_id, db: Session):
     return query
 
 
-def create_invitations(db: Session, user_id, meeting_id):
-    query = models.Invitation(user_id=user_id,
+def create_invitations(db: Session, user_email, meeting_id):
+    query = models.Invitation(user_email=user_email,
                               meeting_id=meeting_id
                               )
     try:

@@ -49,7 +49,8 @@ class Meeting(Base):
     __tablename__ = 'meetings'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
-    organized_by = Column(String, ForeignKey("users.id"), nullable=False)
+    created_by = Column(String, ForeignKey("users.id"), nullable=False)
+    organizer = Column(String, nullable=True)
     name = Column(String, nullable=True)
     description = Column(Text, nullable=True)
     start_time = Column(DateTime, nullable=False)
@@ -63,7 +64,8 @@ class Meeting(Base):
 class Invitation(Base):
     __tablename__ = 'invitations'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    user_email = Column(String, ForeignKey("users.email"), nullable=False)
     meeting_id = Column(Integer, ForeignKey("meetings.id"), nullable=False)
+    created_at = Column(DateTime, default=func.now())
     user = relationship('User', back_populates='invitation')
     meeting = relationship('Meeting', back_populates='invitation')

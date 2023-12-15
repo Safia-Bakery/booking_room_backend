@@ -88,42 +88,42 @@ async def update_role(id, role: CreateUserRole, db: Session = Depends(get_db), c
 
 # ----------------------- Actions with ROOMS ------------------------
 @admin_router.get("/rooms", response_model=List[GetRoom], status_code=200)
-async def get_rooms(db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
-    role_id = current_user.role_id
-    if not role_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
-    role_name = crud.get_role(role_id, db).role
-    if role_name == "admin":
-        return crud.get_all_rooms(db=db)
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
+async def get_rooms(db: Session = Depends(get_db)):  # current_user: GetUser = Depends(get_current_user)
+    # role_id = current_user.role_id
+    # if not role_id:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
+    # role_name = crud.get_role(role_id, db).role
+    # if role_name == "admin":
+    return crud.get_all_rooms(db=db)
+    # raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
 
 
 @admin_router.get("/rooms/{id}", response_model=GetRoom, status_code=200)
-async def get_room(id, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
-    role_id = current_user.role_id
-    if not role_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
-    role_name = crud.get_role(role_id, db).role
-    if role_name == "admin":
-        room = crud.get_room(id=id, db=db)
-        if not room:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Room with the id {id} not found!")
-        return room
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
+async def get_room(id, db: Session = Depends(get_db)):  # current_user: GetUser = Depends(get_current_user)
+    # role_id = current_user.role_id
+    # if not role_id:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
+    # role_name = crud.get_role(role_id, db).role
+    # if role_name == "admin":
+    room = crud.get_room(id=id, db=db)
+    if not room:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Room with the id {id} not found!")
+    return room
+    # raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
 
 
 @admin_router.post("/rooms", response_model=CreateRoom, status_code=201)
-async def create_room(form_data: CreateRoom, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
-    role_id = current_user.role_id
-    if not role_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
-    role_name = crud.get_role(role_id, db).role
-    if role_name == "admin":
-        created_room = crud.create_room(db=db, form_data=form_data)
-        if not created_room:
-            raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The room with the name already exists!")
-        return created_room
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
+async def create_room(form_data: CreateRoom, db: Session = Depends(get_db)):  # current_user: GetUser = Depends(get_current_user)
+    # role_id = current_user.role_id
+    # if not role_id:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
+    # role_name = crud.get_role(role_id, db).role
+    # if role_name == "admin":
+    created_room = crud.create_room(db=db, form_data=form_data)
+    if not created_room:
+        raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The room with the name already exists!")
+    return created_room
+    # raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
 
 
 # --------------------- Actions with USERS --------------------------

@@ -1,8 +1,8 @@
 """Migrate tables
 
-Revision ID: 8711efc0c47c
+Revision ID: ff59f2f1088c
 Revises: 
-Create Date: 2023-12-08 18:27:43.244248
+Create Date: 2023-12-15 16:10:03.672669
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8711efc0c47c'
+revision: str = 'ff59f2f1088c'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -47,22 +47,24 @@ def upgrade() -> None:
     op.create_table('meetings',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('room_id', sa.Integer(), nullable=False),
-    sa.Column('organized_by', sa.String(), nullable=False),
+    sa.Column('created_by', sa.String(), nullable=False),
+    sa.Column('organizer', sa.String(), nullable=True),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('start_time', sa.DateTime(), nullable=False),
     sa.Column('end_time', sa.DateTime(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['organized_by'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['created_by'], ['users.id'], ),
     sa.ForeignKeyConstraint(['room_id'], ['rooms.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('invitations',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('user_id', sa.String(), nullable=False),
+    sa.Column('user_email', sa.String(), nullable=False),
     sa.Column('meeting_id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['meeting_id'], ['meetings.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['user_email'], ['users.email'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

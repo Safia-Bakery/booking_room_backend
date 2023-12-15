@@ -35,9 +35,8 @@ class CreateRoom(BaseModel):
 
 
 class GetUser(TunedModel):
-    id: int
-    role_id: int
-    role: GetUserRole
+    id: str
+    role_id: Optional[int] = None
     fullname: str
     email: str
     reg_date: datetime = datetime.now()
@@ -45,7 +44,7 @@ class GetUser(TunedModel):
 
 
 class CreateUser(BaseModel):
-    id: int
+    id: str
     role_id: Optional[int] = None
     fullname: Optional[str]
     email: EmailStr
@@ -56,23 +55,23 @@ class GoogleToken(BaseModel):
 
 
 class GetMeeting(TunedModel):
-    id: int
+    id: Optional[int]
     room_id: int
-    organized_by: int
-    invited_users: List[str]
-    name: str
-    description: str
-    start_time: datetime
-    end_time: datetime
-    created_at: datetime = datetime.now()
+    created_by: Optional[str]
+    organizer: Optional[str]
+    # invited_users: Optional[List[EmailStr]]
+    name: Optional[str]
+    description: Optional[str]
+    start_time: Optional[datetime]
+    end_time: Optional[datetime]
 
 
 class CreateMeeting(BaseModel):
-    id: Optional[int]
     room_id: int
-    organized_by: int
-    invited_users: List[str]
-    name: Optional[str]
+    created_by: Optional[str] = None
+    organizer: Optional[str] = None
+    invited_users: Optional[List[EmailStr]] = None
+    name: Optional[str] = None
     description: Optional[str]
     start_time: datetime
     end_time: datetime
