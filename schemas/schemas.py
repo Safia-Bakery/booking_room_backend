@@ -57,9 +57,8 @@ class GoogleToken(BaseModel):
 class GetMeeting(TunedModel):
     id: Optional[int]
     room_id: int
-    created_by: Optional[str]
-    organizer: Optional[str]
-    # invited_users: Optional[List[EmailStr]]
+    created_by: Optional[str] = None
+    organizer: Optional[str] = None
     name: Optional[str]
     description: Optional[str]
     start_time: Optional[datetime]

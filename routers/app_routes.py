@@ -88,9 +88,9 @@ async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db)
 
 @app_router.delete("/meetings/{id}", status_code=204)
 async def delete_meeting(id, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
-    deleted_meeting = crud.delete_meeting(id=id, db=db)
+    deleted_meeting = crud.delete_own_meeting(id=id, user_id=current_user.id, db=db)
     if not deleted_meeting:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meeting not found!")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meeting not found or not have permission!")
     return deleted_meeting
 
 

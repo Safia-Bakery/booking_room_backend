@@ -1,10 +1,11 @@
 from fastapi import HTTPException, status
-from sqlalchemy import and_, cast, Date
+from sqlalchemy import and_, cast, Date, or_
 from sqlalchemy.orm import Session
 from models import models
 from sqlalchemy.exc import IntegrityError
 from schemas.schemas import *
 from datetime import datetime
+from sqlalchemy.orm.exc import UnmappedClassError, UnmappedInstanceError
 
 
 # ----------------------- USER ROLES OPERATIONS ------------------------------------
@@ -131,17 +132,28 @@ def get_meeting(id, db: Session):
 
 
 def check_meeting(db: Session, form_data: CreateMeeting):
-    query = db.query(models.Meeting).filter(and_(models.Meeting.room_id == form_data.room_id,
-                                                 models.Meeting.start_time == form_data.start_time,
-                                                 models.Meeting.end_time == form_data.end_time,
-                                                 )
+    query = db.query(models.Meeting).filter(or_(and_(models.Meeting.room_id == form_data.room_id,
+                                                     models.Meeting.start_time >= form_data.start_time,
+                                                     models.Meeting.start_time <= form_data.end_time
+                                                     ),
+                                                and_(models.Meeting.room_id == form_data.room_id,
+                                                     models.Meeting.end_time >= form_data.start_time,
+                                                     models.Meeting.end_time <= form_data.end_time
+                                                     ),
+                                                and_(models.Meeting.room_id == form_data.room_id,
+                                                     models.Meeting.start_time >= form_data.start_time,
+                                                     models.Meeting.start_time <= form_data.end_time,
+                                                     models.Meeting.end_time >= form_data.start_time,
+                                                     models.Meeting.end_time <= form_data.end_time
+                                                     )
+                                                )
                                             ).first()
     if query:
         return query
 
 
 def get_all_user_meetings(user_id, db: Session):
-    query = db.query(models.Meeting).filter(models.Meeting.organized_by == user_id)
+    query = db.query(models.Meeting).filter(models.Meeting.created_by == user_id).all()
     return query
 
 
@@ -160,10 +172,17 @@ def create_meeting(db: Session, form_data: CreateMeeting, creator):
     return query
 
 
-def delete_meeting(id, db: Session):
-    query = db.query(models.Meeting).filter(models.Meeting.id == id).delete(synchronize_session=False)
-    db.commit()
-    return query
+def delete_own_meeting(id, user_id, db: Session):
+    query = db.query(models.Meeting).filter(and_(models.Meeting.id == id,
+                                                 models.Meeting.created_by == user_id)
+                                            ).first()
+    try:
+        db.delete(query)
+        db.commit()
+        return query
+    except (AttributeError, UnmappedInstanceError):
+        return False
+
 
 
 def update_meeting(id, meeting: CreateMeeting, db: Session):
