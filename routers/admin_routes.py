@@ -165,7 +165,7 @@ async def get_meetings(db: Session = Depends(get_db), current_user: GetUser = De
 
 
 @admin_router.get("/meetings/{id}", response_model=GetMeeting, status_code=200)
-def get_meeting(id, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
+def get_meeting(id: str, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
     role_id = current_user.role_id
     if not role_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")

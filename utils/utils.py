@@ -107,7 +107,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         if datetime.fromtimestamp(expire_date) < datetime.now():
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Token is expired',
+                detail='JWT Token is expired',
                 headers={'WWW-Authenticate': 'Bearer'},
             )
         token_data = TokenData(email=email)
@@ -147,7 +147,6 @@ async def email_sender(receivers, organizer, room, meeting_name, start_time, end
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, text)
         print("Messages were sent successfully!")
-
 
 
 # def verify_token(token: str, credentials_exception):

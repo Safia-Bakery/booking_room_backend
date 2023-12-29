@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, status, Depends
+from fastapi import APIRouter, Request, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette.templating import Jinja2Templates
 # from routers.settings import oauth, FRONTEND_URL
@@ -45,14 +45,17 @@ templates = Jinja2Templates(directory="templates")
 
 @auth_router.post("/login", status_code=status.HTTP_200_OK, response_model=Token)
 async def auth(google_token: GoogleToken, db: Session = Depends(get_db)):
-    print(google_token.token)
+    print("Google User Token: ", google_token.token)
     user_info = requests.get(f"https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token={google_token.token}")
     user_dict = user_info.json()
     print(user_dict)
+    user_dict["google_token"] = google_token.token
     user_obj = crud.get_or_create_user(db=db, form_data=user_dict)
     if user_obj:
         jwt_token = create_token(user_dict['email'])
         return JSONResponse({'email': user_dict['email'], 'jwt_token': jwt_token, "token_type": "Bearer"})
+
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please, retry login!")
 
 
 @auth_router.get('/logout', status_code=status.HTTP_200_OK)

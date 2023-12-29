@@ -41,6 +41,7 @@ class GetUser(TunedModel):
     email: str
     reg_date: datetime = datetime.now()
     update_date: datetime = datetime.now()
+    google_token: Optional[str]
 
 
 class CreateUser(BaseModel):
@@ -55,7 +56,7 @@ class GoogleToken(BaseModel):
 
 
 class GetMeeting(TunedModel):
-    id: Optional[int]
+    id: Optional[str]
     room_id: int
     created_by: Optional[str] = None
     organizer: Optional[str] = None
@@ -66,6 +67,7 @@ class GetMeeting(TunedModel):
 
 
 class CreateMeeting(BaseModel):
+    # id: Optional[int]
     room_id: int
     created_by: Optional[str] = None
     organizer: Optional[str] = None

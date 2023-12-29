@@ -102,11 +102,16 @@ def create_user(db: Session, form_data):
 def get_or_create_user(db: Session, form_data):
     query = db.query(models.User).filter(models.User.email == form_data['email']).first()
     if query:
+        print("GOOGLE TOKEN WAS UPDATED")
+        query.google_token = form_data['google_token']
+        db.commit()
+        db.refresh(query)
         return query
 
     query = models.User(id=form_data['id'],
                         fullname=form_data['name'],
-                        email=form_data['email']
+                        email=form_data['email'],
+                        google_token=form_data['google_token']
                         )
     db.add(query)
     db.commit()
@@ -121,33 +126,33 @@ def get_all_meetings(db: Session):
 
 
 def get_all_meetings_of_room_by_date(room_id, date, db: Session):
-    query = db.query(models.Meeting).filter(models.Meeting.room_id == room_id).filter(and_(cast(models.Meeting.start_time, Date) == date,
-                                                                                           cast(models.Meeting.end_time, Date) == date))
+    query = db.query(models.Meeting).filter(models.Meeting.room_id == room_id).filter(
+        and_(
+            cast(models.Meeting.start_time, Date) == date,
+            cast(models.Meeting.end_time, Date) == date
+        )
+    ).all()
     return query
 
 
 def get_meeting(id, db: Session):
-    query = db.query(models.Meeting).get(id)
+    query = db.query(models.Meeting).filter(models.Meeting.id == id).first()
     return query
 
 
 def check_meeting(db: Session, form_data: CreateMeeting):
-    query = db.query(models.Meeting).filter(or_(and_(models.Meeting.room_id == form_data.room_id,
-                                                     models.Meeting.start_time >= form_data.start_time,
-                                                     models.Meeting.start_time <= form_data.end_time
-                                                     ),
-                                                and_(models.Meeting.room_id == form_data.room_id,
-                                                     models.Meeting.end_time >= form_data.start_time,
-                                                     models.Meeting.end_time <= form_data.end_time
-                                                     ),
-                                                and_(models.Meeting.room_id == form_data.room_id,
-                                                     models.Meeting.start_time >= form_data.start_time,
-                                                     models.Meeting.start_time <= form_data.end_time,
-                                                     models.Meeting.end_time >= form_data.start_time,
-                                                     models.Meeting.end_time <= form_data.end_time
-                                                     )
-                                                )
-                                            ).first()
+    query = db.query(models.Meeting).filter(models.Meeting.room_id == form_data.room_id).filter(
+        or_(
+            and_(
+                models.Meeting.start_time <= form_data.start_time,
+                models.Meeting.end_time >= form_data.start_time
+            ),
+            and_(
+                models.Meeting.start_time <= form_data.end_time,
+                models.Meeting.end_time >= form_data.end_time
+            )
+        )
+    ).first()
     if query:
         return query
 
@@ -157,8 +162,9 @@ def get_all_user_meetings(user_id, db: Session):
     return query
 
 
-def create_meeting(db: Session, form_data: CreateMeeting, creator):
-    query = models.Meeting(room_id=form_data.room_id,
+def create_meeting(db: Session, form_data: CreateMeeting, meeting_id, creator):
+    query = models.Meeting(id=meeting_id,
+                           room_id=form_data.room_id,
                            created_by=creator,
                            organizer=form_data.organizer,
                            name=form_data.name,
@@ -166,10 +172,14 @@ def create_meeting(db: Session, form_data: CreateMeeting, creator):
                            start_time=form_data.start_time,
                            end_time=form_data.end_time
                            )
-    db.add(query)
-    db.commit()
-    db.refresh(query)
-    return query
+    try:
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+    except IntegrityError:
+        db.rollback()
+    else:
+        return query
 
 
 def delete_own_meeting(id, user_id, db: Session):
@@ -179,10 +189,10 @@ def delete_own_meeting(id, user_id, db: Session):
     try:
         db.delete(query)
         db.commit()
-        return query
     except (AttributeError, UnmappedInstanceError):
         return False
-
+    else:
+        return query
 
 
 def update_meeting(id, meeting: CreateMeeting, db: Session):
@@ -193,7 +203,7 @@ def update_meeting(id, meeting: CreateMeeting, db: Session):
 
 # ----------------------- INVITATIONS OPERATIONS ------------------------------------
 def get_all_user_invitations(user_id, db: Session):
-    query = db.query(models.Invitation).filter(models.Invitation.user_id == user_id)
+    query = db.query(models.Invitation).filter(models.Invitation.user_id == user_id).all()
     return query
 
 
@@ -205,7 +215,8 @@ def create_invitations(db: Session, user_email, meeting_id):
         db.add(query)
         db.commit()
         db.refresh(query)
-    except IntegrityError:
+    except IntegrityError as e:
+        print(e)
         db.rollback()
     else:
         return query

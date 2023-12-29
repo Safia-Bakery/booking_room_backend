@@ -1,8 +1,8 @@
 """Migrate tables
 
-Revision ID: ff59f2f1088c
+Revision ID: 90e20c1cfdb3
 Revises: 
-Create Date: 2023-12-15 16:10:03.672669
+Create Date: 2023-12-29 14:47:15.424707
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'ff59f2f1088c'
+revision: str = '90e20c1cfdb3'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -38,22 +38,23 @@ def upgrade() -> None:
     sa.Column('role_id', sa.Integer(), nullable=True),
     sa.Column('fullname', sa.String(), nullable=False),
     sa.Column('email', sa.String(), nullable=False),
-    sa.Column('reg_date', sa.DateTime(), nullable=True),
-    sa.Column('update_date', sa.DateTime(), nullable=True),
+    sa.Column('reg_date', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('update_date', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('google_token', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
     op.create_table('meetings',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('id', sa.String(), nullable=False),
     sa.Column('room_id', sa.Integer(), nullable=False),
     sa.Column('created_by', sa.String(), nullable=False),
     sa.Column('organizer', sa.String(), nullable=True),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('start_time', sa.DateTime(), nullable=False),
-    sa.Column('end_time', sa.DateTime(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('start_time', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('end_time', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
     sa.ForeignKeyConstraint(['created_by'], ['users.id'], ),
     sa.ForeignKeyConstraint(['room_id'], ['rooms.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -61,10 +62,9 @@ def upgrade() -> None:
     op.create_table('invitations',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_email', sa.String(), nullable=False),
-    sa.Column('meeting_id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('meeting_id', sa.String(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
     sa.ForeignKeyConstraint(['meeting_id'], ['meetings.id'], ),
-    sa.ForeignKeyConstraint(['user_email'], ['users.email'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
