@@ -102,7 +102,6 @@ def create_user(db: Session, form_data):
 def get_or_create_user(db: Session, form_data):
     query = db.query(models.User).filter(models.User.email == form_data['email']).first()
     if query:
-        print("GOOGLE TOKEN WAS UPDATED")
         query.google_token = form_data['google_token']
         db.commit()
         db.refresh(query)
@@ -178,8 +177,8 @@ def create_meeting(db: Session, form_data: CreateMeeting, meeting_id, creator):
         db.refresh(query)
     except IntegrityError:
         db.rollback()
-    else:
-        return query
+
+    return query
 
 
 def delete_own_meeting(id, user_id, db: Session):
@@ -216,7 +215,6 @@ def create_invitations(db: Session, user_email, meeting_id):
         db.commit()
         db.refresh(query)
     except IntegrityError as e:
-        print(e)
         db.rollback()
     else:
         return query

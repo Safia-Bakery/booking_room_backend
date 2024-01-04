@@ -146,7 +146,7 @@ async def email_sender(receivers, organizer, room, meeting_name, start_time, end
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, text)
-        print("Messages were sent successfully!")
+        # print("Messages were sent successfully!")
 
 
 # def verify_token(token: str, credentials_exception):

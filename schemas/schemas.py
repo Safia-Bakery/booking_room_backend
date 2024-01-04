@@ -67,7 +67,7 @@ class GetMeeting(TunedModel):
 
 
 class CreateMeeting(BaseModel):
-    # id: Optional[int]
+    # id: Optional[str]
     room_id: int
     created_by: Optional[str] = None
     organizer: Optional[str] = None

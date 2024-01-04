@@ -71,22 +71,16 @@ async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db)
     if existed_meeting:
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The meeting with the time period already exists!")
     meeting_id = uuid.uuid4().hex
-    created_meeting = crud.create_meeting(db=db, form_data=form_data, meeting_id=meeting_id, creator=current_user.id)   # "117815046759720350408"
+    created_meeting = crud.create_meeting(db=db, form_data=form_data, meeting_id=meeting_id, creator=current_user.id)
     google_token = current_user.google_token
-    print("Created Meeting id:", created_meeting.id)
     email_receivers = []
-    print("Form data:", form_data)
-    print("Entered emails: ", form_data.invited_users)
     if not form_data.invited_users:
-        print("Not invited users")
         return created_meeting
 
     # there will be created google calendar event
     for user_email in form_data.invited_users:
         created_invitation = crud.create_invitations(db=db, user_email=user_email, meeting_id=created_meeting.id)
-        print("created invitation: ", created_invitation)
         if not created_invitation:
-            print("302 ERROR")
             continue
         email_receivers.append({"email": user_email})
     room = crud.get_room(id=form_data.room_id, db=db).name

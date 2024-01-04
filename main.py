@@ -34,10 +34,10 @@ main_app.add_middleware(
 )
 
 
-if __name__ == "__main__":
-    uvicorn.run(
-        app="main:main_app",
-        host="10.0.2.59",  # "10.0.2.59",
-        port=8000,
-        reload=True
-    )
+# if __name__ == "__main__":
+#     uvicorn.run(
+#         app="main:main_app",
+#         host="10.0.2.59",  # "10.0.2.59",
+#         port=8000,
+#         reload=True
+#     )

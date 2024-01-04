@@ -7,6 +7,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from starlette.responses import JSONResponse
+
 from config.config import GOOGLE_API_KEY
 
 # If modifying these scopes, delete the file token.json.
@@ -38,15 +40,13 @@ async def get_events(google_token):
             events = event_result.get("items", [])
 
             if not events:
-                print("No upcoming events found!")
                 return
 
             for event in events:
                 start = event["start"].get("datetime", event["start"].get("date"))
-                print(start, event["summary"])
 
         except HttpError as error:
-            print("An error occurred: ", error)
+            pass
 
 
 async def create_service():
@@ -102,14 +102,8 @@ async def create_event(google_token, id, organizer, room, description, start_tim
         }
         url = f"https://www.googleapis.com/calendar/v3/calendars/primary/events?key={api_key}"
         event = requests.post(url=url, headers=headers, data=json.dumps(event_body))
-        if event.status_code == 200:
-            print('Event created successfully!')
-            print(event.json())
-        else:
-            print('Failed to create event')
-            print(event.status_code, event.text)
     except HttpError as error:
-        print("An error occurred: ", error)
+        JSONResponse({"Message": "Error occured with Google calendar Api"})
 
 
 async def delete_event(id, google_token):
@@ -121,6 +115,5 @@ async def delete_event(id, google_token):
             'Content-Type': 'application/json',
         }
         deleted_event = requests.delete(url=url, headers=headers)
-        print(deleted_event.status_code, deleted_event)
     except HttpError as error:
-        print("An error occurred: ", error)
+        JSONResponse({"Message": "Error occured with Google calendar Api"})
