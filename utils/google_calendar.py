@@ -69,16 +69,16 @@ async def create_service():
     return creds
 
 
-async def create_event(google_token, id, organizer, room, description, start_time, end_time, guests):
+async def create_event(google_token, id, organizer, room, name, start_time, end_time, guests):
     start_time = str(start_time)
     end_time = str(end_time)
     api_key = GOOGLE_API_KEY
     try:
         event_body = {
             "id": id,
-            "summary": description,
+            "summary": name,
             "location": room,
-            "description": f"You were invited to meeting {description} organized by {organizer}.\n"
+            "description": f"You were invited to meeting {name} organized by {organizer}.\n"
                            f"Meeting get place in {room} at {start_time} and continue until {end_time}",
             "colorId": 6,
             "status": "confirmed",

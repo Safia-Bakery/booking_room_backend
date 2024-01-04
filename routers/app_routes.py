@@ -84,13 +84,13 @@ async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db)
             continue
         email_receivers.append({"email": user_email})
     room = crud.get_room(id=form_data.room_id, db=db).name
-    organizer = form_data.organizer
-    description = form_data.description
-    start_time = form_data.start_time
-    end_time = form_data.end_time
+    organizer = created_meeting.organizer
+    description = created_meeting.description
+    start_time = created_meeting.start_time
+    end_time = created_meeting.end_time
     # await email_sender(receivers=email_receivers, organizer=created_meeting.organizer, room=room,
     #                    meeting_name=meeting_name, start_time=start_time, end_time=end_time)
-    await create_event(google_token=google_token, id=meeting_id, organizer=organizer, room=room, description=description,
+    await create_event(google_token=google_token, id=meeting_id, organizer=organizer, room=room, name=description,
                        start_time=start_time, end_time=end_time, guests=email_receivers)
     return created_meeting
 
