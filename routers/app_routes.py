@@ -7,9 +7,11 @@ import json
 import uuid
 from schemas.schemas import *
 from crud import crud
+from utils.bot_requests import send_to_chat
 from utils.utils import get_db, get_current_user, email_sender
 from utils.google_calendar import get_events, create_event, delete_event
 from datetime import datetime, date
+from config.config import BOT_TOKEN, CHANNEL_ID
 
 
 app_router = APIRouter(
@@ -85,13 +87,21 @@ async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db)
         email_receivers.append({"email": user_email})
     room = crud.get_room(id=form_data.room_id, db=db).name
     organizer = created_meeting.organizer
-    description = created_meeting.description
+    title = created_meeting.description
     start_time = created_meeting.start_time
     end_time = created_meeting.end_time
+    # message_text = (f"You were invited to meeting {title} organized by {organizer}.\n"
+    #                 f"Meeting get place in {room} at {start_time.split(sep='.')[0]} and "
+    #                 f"continue until {end_time.split(sep='.')[0]}")
+    message_text = (f"Уважаемые коллеги!\n\n13.10.2023 с {start_time.split(sep='.')[0]} до {end_time.split(sep='.')[0]}"
+                    f" {room} будет забронирована✅.\n\n"
+                    f"Забронировал: {organizer}")
     # await email_sender(receivers=email_receivers, organizer=created_meeting.organizer, room=room,
     #                    meeting_name=meeting_name, start_time=start_time, end_time=end_time)
-    await create_event(google_token=google_token, id=meeting_id, organizer=organizer, room=room, name=description,
-                       start_time=start_time, end_time=end_time, guests=email_receivers)
+    await create_event(google_token=google_token, id=meeting_id, organizer=organizer, room=room, title=title,
+                       start_time=start_time, end_time=end_time, guests=email_receivers, message_text=message_text)
+
+    await send_to_chat(bot_token=BOT_TOKEN, chat_id=CHANNEL_ID, message_text=message_text)
     return created_meeting
 
 
