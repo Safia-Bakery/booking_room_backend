@@ -102,7 +102,9 @@ async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db)
     #                    meeting_name=meeting_name, start_time=start_time, end_time=end_time)
     await create_event(google_token=google_token, id=meeting_id, organizer=organizer, room=room, title=title,
                        start_time=start_time, end_time=end_time, guests=email_receivers, message_text=message_text)
-
+    print(BOT_TOKEN)
+    print(CHANNEL_ID)
+    print(message_text)
     await send_to_chat(bot_token=BOT_TOKEN, chat_id=CHANNEL_ID, message_text=message_text)
 
     return created_meeting
