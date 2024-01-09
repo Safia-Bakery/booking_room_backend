@@ -71,6 +71,8 @@ async def create_service():
 
 async def create_event(google_token, id, organizer, room, title, start_time, end_time, guests, message_text):
     api_key = GOOGLE_API_KEY
+    start_time = str(start_time)
+    end_time = str(end_time)
     try:
         event_body = {
             "id": id,
