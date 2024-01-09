@@ -9,7 +9,7 @@ async def send_to_chat(bot_token, chat_id, message_text):
     response = requests.post(
         f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload,
     )
-
+    print("Telegram response: ", response)
     # Check the response status
     if response.status_code == 200:
         return response
