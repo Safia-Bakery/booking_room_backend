@@ -7,8 +7,7 @@ async def send_to_chat(bot_token, chat_id, message_text):
 
     # Send the request to send the inline keyboard message
     response = requests.post(
-        f"https://api.telegram.org/bot{bot_token}/sendMessage",
-        json=payload,
+        f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload,
     )
 
     # Check the response status
