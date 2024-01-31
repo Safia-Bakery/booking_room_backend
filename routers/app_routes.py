@@ -74,6 +74,8 @@ async def get_own_meetings(db: Session = Depends(get_db), current_user: GetUser 
 @app_router.post("/meetings", response_model=CreateMeeting, status_code=201)
 async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
     existed_meeting = crud.check_meeting(db=db, form_data=form_data)
+    print(existed_meeting.start_time)
+    print(existed_meeting.end_time)
     if existed_meeting:
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Конференц зал уже забронирован в указанном периоде времени!")
     meeting_id = uuid.uuid4().hex
