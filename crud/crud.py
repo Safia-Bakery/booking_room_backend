@@ -211,6 +211,11 @@ def get_all_user_invitations(user_id, db: Session):
     return query
 
 
+def get_all_meeting_invitations(meeting_id, db: Session):
+    query = db.query(models.Invitation).filter(models.Invitation.meeting_id == meeting_id).all()
+    return query
+
+
 def create_invitations(db: Session, user_email, meeting_id):
     query = models.Invitation(user_email=user_email,
                               meeting_id=meeting_id

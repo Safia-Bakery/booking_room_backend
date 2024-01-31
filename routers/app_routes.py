@@ -44,7 +44,7 @@ async def get_room(id: int, response: Response, db: Session = Depends(get_db),
 
 # --------------------- Actions with MEETINGS --------------------------
 @app_router.get("/meetings", response_model=List[GetMeeting], status_code=200)
-def get_meetings_of_room(room_id: int, query_date: Optional[date], db: Session = Depends(get_db),
+def get_meetings_of_room(room_id: int, query_date: Optional[date] = None, db: Session = Depends(get_db),
                          current_user: GetUser = Depends(get_current_user)):
     if not query_date:
         all_meetings = crud.get_all_meetings_of_room(room_id=room_id, db=db)
@@ -57,12 +57,15 @@ def get_meetings_of_room(room_id: int, query_date: Optional[date], db: Session =
 
 
 @app_router.get("/meetings/{id}", response_model=GetMeeting, status_code=200)
-async def get_meeting(id: str, response: Response, db: Session = Depends(get_db)):  # current_user: GetUser = Depends(get_current_user)
+async def get_meeting(id: str, response: Response, db: Session = Depends(get_db),
+                      current_user: GetUser = Depends(get_current_user)):
     meeting = crud.get_meeting(id=id, db=db)
     if not meeting:
         response.status_code = status.HTTP_404_NOT_FOUND
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meeting with the id not found!")
-    return meeting
+    invited_users = crud.get_all_meeting_invitations(meeting_id=id, db=db)
+    email_list = [email.user_email for email in invited_users]
+    return {"meeting": meeting, "invited_users": email_list}
 
 
 @app_router.get("/my-meetings", response_model=List[GetMeeting])
