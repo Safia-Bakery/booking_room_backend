@@ -134,6 +134,11 @@ def get_all_meetings_of_room_by_date(room_id, date, db: Session):
     return query
 
 
+def get_all_meetings_of_room(room_id, db: Session):
+    query = db.query(models.Meeting).filter(models.Meeting.room_id == room_id).all()
+    return query
+
+
 def get_meeting(id, db: Session):
     query = db.query(models.Meeting).filter(models.Meeting.id == id).first()
     return query

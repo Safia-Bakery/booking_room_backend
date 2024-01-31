@@ -44,8 +44,11 @@ async def get_room(id: int, response: Response, db: Session = Depends(get_db),
 
 # --------------------- Actions with MEETINGS --------------------------
 @app_router.get("/meetings", response_model=List[GetMeeting], status_code=200)
-def get_meetings_of_room(room_id: int, query_date: date, db: Session = Depends(get_db),
+def get_meetings_of_room(room_id: int, query_date: Optional[date], db: Session = Depends(get_db),
                          current_user: GetUser = Depends(get_current_user)):
+    if not query_date:
+        all_meetings = crud.get_all_meetings_of_room(room_id=room_id, db=db)
+        return all_meetings
     specific_meetings = crud.get_all_meetings_of_room_by_date(room_id=room_id, date=query_date, db=db)
     if not specific_meetings:
         # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Planed meetings not found!")
@@ -71,7 +74,7 @@ async def get_own_meetings(db: Session = Depends(get_db), current_user: GetUser 
 async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
     existed_meeting = crud.check_meeting(db=db, form_data=form_data)
     if existed_meeting:
-        raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The meeting with the time period already exists!")
+        raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Конференц зал уже забронирован в указанном периоде времени!")
     meeting_id = uuid.uuid4().hex
     created_meeting = crud.create_meeting(db=db, form_data=form_data, meeting_id=meeting_id, creator=current_user.id)
     google_token = current_user.google_token
