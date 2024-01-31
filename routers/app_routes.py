@@ -43,12 +43,18 @@ async def get_room(id: int, response: Response, db: Session = Depends(get_db),
 
 
 # --------------------- Actions with MEETINGS --------------------------
+@app_router.get("/all_meetings", response_model=List[GetMeeting], status_code=200)
+def get_all_meetings_of_room(room_id: int, db: Session = Depends(get_db),
+                             current_user: GetUser = Depends(get_current_user)):
+    all_meetings = crud.get_all_meetings_of_room(room_id=room_id, db=db)
+    if not all_meetings:
+        return JSONResponse([])
+    return all_meetings
+
+
 @app_router.get("/meetings", response_model=List[GetMeeting], status_code=200)
-def get_meetings_of_room(room_id: int, query_date: Optional[date] = None, db: Session = Depends(get_db),
-                         current_user: GetUser = Depends(get_current_user)):
-    if not query_date:
-        all_meetings = crud.get_all_meetings_of_room(room_id=room_id, db=db)
-        return all_meetings
+def get_meetings_of_room_by_date(room_id: int, query_date: date, db: Session = Depends(get_db),
+                                 current_user: GetUser = Depends(get_current_user)):
     specific_meetings = crud.get_all_meetings_of_room_by_date(room_id=room_id, date=query_date, db=db)
     if not specific_meetings:
         # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Planed meetings not found!")
@@ -61,9 +67,9 @@ async def get_meeting(id: str, db: Session = Depends(get_db), current_user: GetU
     meeting = crud.get_meeting(id=id, db=db)
     if not meeting:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meeting with the id not found!")
-    invited_users = crud.get_all_meeting_invitations(meeting_id=id, db=db)
-    email_list = [email.user_email for email in invited_users]
-    return {"meeting": meeting, "invited_users": email_list}
+    # invited_users = crud.get_all_meeting_invitations(meeting_id=id, db=db)
+    # email_list = [email.user_email for email in invited_users]
+    return meeting
 
 
 @app_router.get("/my-meetings", response_model=List[GetMeeting])
@@ -73,7 +79,10 @@ async def get_own_meetings(db: Session = Depends(get_db), current_user: GetUser 
 
 @app_router.post("/meetings", response_model=CreateMeeting, status_code=201)
 async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
+    print(form_data.start_time,form_data.end_time)
     existed_meeting = crud.check_meeting(db=db, form_data=form_data)
+    # print(existed_meeting)
+    # print(existed_meeting.id,existed_meeting.organizer,existed_meeting.start_time,existed_meeting.end_time)
     if existed_meeting:
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Конференц зал уже забронирован в указанном периоде времени!")
     meeting_id = uuid.uuid4().hex

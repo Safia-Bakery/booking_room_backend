@@ -157,8 +157,7 @@ def check_meeting(db: Session, form_data: CreateMeeting):
             )
         )
     ).first()
-    if query:
-        return query
+    return query
 
 
 def get_all_user_meetings(user_id, db: Session):

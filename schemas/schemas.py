@@ -35,12 +35,12 @@ class CreateRoom(BaseModel):
 
 
 class GetUser(TunedModel):
-    id: str
+    id: Optional[str]
     role_id: Optional[int] = None
-    fullname: str
-    email: str
-    reg_date: datetime = datetime.now()
-    update_date: datetime = datetime.now()
+    fullname: Optional[str]
+    email: Optional[str]
+    reg_date: Optional[datetime] = datetime.now()
+    update_date: Optional[datetime] = datetime.now()
     google_token: Optional[str]
 
 
@@ -55,6 +55,14 @@ class GoogleToken(BaseModel):
     token: str
 
 
+class GetInvitationList(TunedModel):
+    user: Optional[List[GetUser]] = None
+
+
+class GetInvitation(TunedModel):
+    user_email: Optional[EmailStr] = None
+
+
 class GetMeeting(TunedModel):
     id: Optional[str]
     room_id: int
@@ -64,6 +72,8 @@ class GetMeeting(TunedModel):
     description: Optional[str]
     start_time: Optional[datetime]
     end_time: Optional[datetime]
+    # invitation: Optional[List[GetInvitationList]] = None
+    invitation: Optional[List[GetInvitation]] = None
 
 
 class CreateMeeting(BaseModel):
@@ -77,11 +87,6 @@ class CreateMeeting(BaseModel):
     start_time: datetime
     end_time: datetime
 
-
-class GetInvitation(TunedModel):
-    id: int
-    user: GetUser
-    meeting: GetMeeting
 
 
 class CreateInvitation(BaseModel):
