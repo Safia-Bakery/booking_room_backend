@@ -88,7 +88,6 @@ class CreateMeeting(BaseModel):
     end_time: datetime
 
 
-
 class CreateInvitation(BaseModel):
     user_id: str
     meeting_id: int

@@ -79,25 +79,21 @@ async def get_own_meetings(db: Session = Depends(get_db), current_user: GetUser 
 
 @app_router.post("/meetings", response_model=CreateMeeting, status_code=201)
 async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
-    print(form_data.start_time,form_data.end_time)
     existed_meeting = crud.check_meeting(db=db, form_data=form_data)
-    # print(existed_meeting)
-    # print(existed_meeting.id,existed_meeting.organizer,existed_meeting.start_time,existed_meeting.end_time)
     if existed_meeting:
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Конференц зал уже забронирован в указанном периоде времени!")
     meeting_id = uuid.uuid4().hex
     created_meeting = crud.create_meeting(db=db, form_data=form_data, meeting_id=meeting_id, creator=current_user.id)
     google_token = current_user.google_token
     email_receivers = []
-    if not form_data.invited_users:
-        return created_meeting
+    if form_data.invited_users:
+        for user_email in form_data.invited_users:
+            created_invitation = crud.create_invitations(db=db, user_email=user_email, meeting_id=created_meeting.id)
+            if not created_invitation:
+                continue
+            email_receivers.append({"email": user_email})
 
     # there will be created google calendar event
-    for user_email in form_data.invited_users:
-        created_invitation = crud.create_invitations(db=db, user_email=user_email, meeting_id=created_meeting.id)
-        if not created_invitation:
-            continue
-        email_receivers.append({"email": user_email})
     room = crud.get_room(id=form_data.room_id, db=db).name
     organizer = created_meeting.organizer
     title = created_meeting.description
