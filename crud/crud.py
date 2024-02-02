@@ -46,7 +46,8 @@ def update_role(db: Session, id, role: CreateUserRole):
 
 # ----------------------- ROOMS OPERATIONS ------------------------------------
 def get_all_rooms(db: Session):
-    query = db.query(models.Room).all()
+    db.query(models.Payments).order_by(models.Payments.last_update.desc()).first()
+    query = db.query(models.Room).order_by(models.Room.id.asc()).all()
     return query
 
 
@@ -65,6 +66,12 @@ def create_room(db: Session, form_data: CreateRoom):
         db.rollback()
     else:
         return query
+
+
+def update_room(id, room: CreateRoom, db: Session):
+    obj = db.query(models.Room).filter(models.Room.id == id).update(dict(room))
+    db.commit()
+    return obj
 
 
 # ----------------------- USERS OPERATIONS ------------------------------------

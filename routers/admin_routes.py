@@ -126,6 +126,16 @@ async def create_room(form_data: CreateRoom, db: Session = Depends(get_db)):  # 
     # raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
 
 
+@admin_router.put("/rooms/{id}", status_code=202)
+async def update_room(id, room: CreateRoom, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
+    updated_room = crud.update_room(id=id, room=room, db=db)
+    if not updated_room:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found!!")
+
+    return updated_room
+
+
+
 # --------------------- Actions with USERS --------------------------
 @admin_router.get("/users", response_model=List[GetUser], status_code=200)
 async def get_users(db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
