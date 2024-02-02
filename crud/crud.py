@@ -100,22 +100,22 @@ def create_user(db: Session, form_data):
 
 
 def get_or_create_user(db: Session, form_data):
-    query = db.query(models.User).filter(models.User.email == form_data['email']).first()
-    if query:
-        query.google_token = form_data['google_token']
+    user_obj = db.query(models.User).filter(models.User.email == form_data['email']).first()
+    if user_obj:
+        user_obj.google_token = form_data['google_token']
         db.commit()
-        db.refresh(query)
-        return query
+        db.refresh(user_obj)
+        return user_obj
 
-    query = models.User(id=form_data['id'],
-                        fullname=form_data['name'],
-                        email=form_data['email'],
-                        google_token=form_data['google_token']
-                        )
-    db.add(query)
+    new_user = models.User(id=form_data['id'],
+                           fullname=form_data['name'],
+                           email=form_data['email'],
+                           google_token=form_data['google_token']
+                           )
+    db.add(new_user)
     db.commit()
-    db.refresh(query)
-    return query
+    # db.refresh(query)
+    return new_user
 
 
 # ----------------------- MEETINGS OPERATIONS ------------------------------------

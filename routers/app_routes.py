@@ -102,9 +102,9 @@ async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db)
     # message_text = (f"You were invited to meeting {title} organized by {organizer}.\n"
     #                 f"Meeting get place in {room} at {start_time.split(sep='.')[0]} and "
     #                 f"continue until {end_time.split(sep='.')[0]}")
-    meeting_date = str(start_time.date())
-    meeting_start_time = str(start_time.time().strftime("%H:%M"))
-    meeting_end_time = str(end_time.time().strftime("%H:%M"))
+    meeting_date = start_time.date().strftime("%d/%m/%Y")
+    meeting_start_time = start_time.time().strftime("%H:%M")
+    meeting_end_time = end_time.time().strftime("%H:%M")
     message_text = (f"Уважаемые коллеги!\n\n{meeting_date} с {meeting_start_time} до {meeting_end_time}"
                     f" {room} будет забронирована✅.\n\n"
                     f"Забронировал: {organizer}")

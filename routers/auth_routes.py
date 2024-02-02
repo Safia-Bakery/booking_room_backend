@@ -48,12 +48,13 @@ async def auth(google_token: GoogleToken, db: Session = Depends(get_db)):
     user_info = requests.get(f"https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token={google_token.token}")
     user_dict = user_info.json()
     user_dict["google_token"] = google_token.token
-    user_obj = crud.get_or_create_user(db=db, form_data=user_dict)
-    if user_obj:
-        jwt_token = create_token(user_dict['email'])
-        return JSONResponse({'email': user_dict['email'], 'jwt_token': jwt_token, "token_type": "Bearer"})
+    # user_obj = crud.get_or_create_user(db=db, form_data=user_dict)
+    crud.get_or_create_user(db=db, form_data=user_dict)
+    # if user_obj:
+    jwt_token = create_token(user_dict['email'])
+    return JSONResponse({'email': user_dict['email'], 'jwt_token': jwt_token, "token_type": "Bearer"})
 
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please, retry login!")
+    # raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please, retry login!")
 
 
 @auth_router.get('/logout', status_code=status.HTTP_200_OK)
