@@ -154,12 +154,20 @@ def check_meeting(db: Session, form_data: CreateMeeting):
     query = db.query(models.Meeting).filter(models.Meeting.room_id == form_data.room_id).filter(
         or_(
             and_(
-                models.Meeting.start_time <= form_data.start_time,
-                models.Meeting.end_time >= form_data.start_time
+                form_data.start_time >= models.Meeting.start_time,
+                form_data.start_time <= models.Meeting.end_time
             ),
             and_(
-                models.Meeting.start_time <= form_data.end_time,
-                models.Meeting.end_time >= form_data.end_time
+                form_data.end_time >= models.Meeting.start_time,
+                form_data.end_time <= models.Meeting.end_time
+            ),
+            and_(
+                models.Meeting.start_time >= form_data.start_time,
+                models.Meeting.start_time <= form_data.end_time
+            ),
+            and_(
+                models.Meeting.end_time >= form_data.start_time,
+                models.Meeting.end_time <= form_data.end_time
             )
         )
     ).first()
