@@ -11,7 +11,7 @@ __pycache__/
 #alembic.ini
 #alembic/
 build/
-migrations/
+#migrations/
 files/
 develop-eggs/
 dist/
