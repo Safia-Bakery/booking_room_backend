@@ -29,8 +29,8 @@ class CreateUserRole(TunedModel):
 class GetRoom(TunedModel):
     id: int
     name: str
-    location: int
-    image: Optional[str]
+    location: Optional[int] = None
+    image: Optional[str] = None
 
 
 class CreateRoom(TunedModel):
