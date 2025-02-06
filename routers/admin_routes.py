@@ -1,3 +1,5 @@
+import shutil
+
 from fastapi import APIRouter, status, Depends
 # from starlette.responses import JSONResponse
 # from config.db import SessionLocal
@@ -112,13 +114,12 @@ async def get_room(id, db: Session = Depends(get_db)):  # current_user: GetUser 
     # raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
 
 
-@admin_router.post("/rooms", response_model=CreateRoom, status_code=201)
-async def create_room(form_data: CreateRoom, db: Session = Depends(get_db)):  # current_user: GetUser = Depends(get_current_user)
-    # role_id = current_user.role_id
-    # if not role_id:
-    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
-    # role_name = crud.get_role(role_id, db).role
-    # if role_name == "admin":
+@admin_router.post("/rooms", response_model=GetRoom)
+async def create_room(
+        form_data: CreateRoom,
+        db: Session = Depends(get_db)
+):  # current_user: GetUser = Depends(get_current_user)
+
     created_room = crud.create_room(db=db, form_data=form_data)
     if not created_room:
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail="The room with the name already exists!")
@@ -126,9 +127,13 @@ async def create_room(form_data: CreateRoom, db: Session = Depends(get_db)):  # 
     # raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
 
 
-@admin_router.put("/rooms/{id}", status_code=202)
-async def update_room(id, room: CreateRoom, db: Session = Depends(get_db), current_user: GetUser = Depends(get_current_user)):
-    updated_room = crud.update_room(id=id, room=room, db=db)
+@admin_router.put("/rooms", response_model=GetRoom, status_code=202)
+async def update_room(
+        room: UpdateRoom,
+        db: Session = Depends(get_db)
+):  # current_user: GetUser = Depends(get_current_user)
+
+    updated_room = crud.update_room(room=room, db=db)
     if not updated_room:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found!!")
 
@@ -187,3 +192,20 @@ def get_meeting(id: str, db: Session = Depends(get_db), current_user: GetUser = 
         return meeting
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissions denied!")
 
+
+
+# --------------------- Actions with FILES --------------------------
+@admin_router.post("/file/upload")
+async def read_files(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    file_path = f"files/{file.filename}"
+    with open(file_path, "wb") as buffer:
+        while True:
+            chunk = await file.read(1024)
+            if not chunk:
+                break
+            buffer.write(chunk)
+
+    return {"file": file_path}

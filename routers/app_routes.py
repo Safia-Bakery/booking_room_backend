@@ -11,8 +11,7 @@ from utils.bot_requests import send_to_chat
 from utils.utils import get_db, get_current_user, email_sender
 from utils.google_calendar import get_events, create_event, delete_event
 from datetime import datetime, date
-from config.config import BOT_TOKEN, CHANNEL_ID
-
+from config.config import BOT_TOKEN, CHANNEL_ID, CHANNEL_ID2
 
 app_router = APIRouter(
     prefix='/app',
@@ -106,13 +105,16 @@ async def create_meeting(form_data: CreateMeeting, db: Session = Depends(get_db)
     meeting_start_time = start_time.time().strftime("%H:%M")
     meeting_end_time = end_time.time().strftime("%H:%M")
     message_text = (f"Уважаемые коллеги!\n\n{meeting_date} с {meeting_start_time} до {meeting_end_time}"
-                    f" {room} будет забронирована✅.\n\n"
+                    f" {room} будет забронирован ✅.\n\n"
                     f"Забронировал: {organizer}")
     # await email_sender(receivers=email_receivers, organizer=created_meeting.organizer, room=room,
     #                    meeting_name=meeting_name, start_time=start_time, end_time=end_time)
     await create_event(google_token=google_token, id=meeting_id, organizer=organizer, room=room, title=title,
                        start_time=start_time, end_time=end_time, guests=email_receivers, message_text=message_text)
-    await send_to_chat(bot_token=BOT_TOKEN, chat_id=CHANNEL_ID, message_text=message_text)
+    if created_meeting.room.location == 1:
+        await send_to_chat(bot_token=BOT_TOKEN, chat_id=CHANNEL_ID, message_text=message_text)
+    elif created_meeting.room.location == 2:
+        await send_to_chat(bot_token=BOT_TOKEN, chat_id=CHANNEL_ID2, message_text=message_text)
 
     return created_meeting
 

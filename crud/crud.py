@@ -1,3 +1,5 @@
+from encodings.rot_13 import rot13_map
+
 from fastapi import HTTPException, status
 from sqlalchemy import and_, cast, Date, or_
 from sqlalchemy.orm import Session
@@ -56,7 +58,7 @@ def get_room(id, db: Session):
 
 
 def create_room(db: Session, form_data: CreateRoom):
-    query = models.Room(name=form_data.name)
+    query = models.Room(name=form_data.name, location=form_data.location, image=form_data.image)
     try:
         db.add(query)
         db.commit()
@@ -67,8 +69,15 @@ def create_room(db: Session, form_data: CreateRoom):
         return query
 
 
-def update_room(id, room: CreateRoom, db: Session):
-    obj = db.query(models.Room).filter(models.Room.id == id).update(dict(room))
+def update_room(room: UpdateRoom, db: Session):
+    obj = db.query(models.Room).filter(models.Room.id == room.id).first()
+    if room.name is not None:
+        obj.name = room.name
+    if room.location is not None:
+        obj.location = room.location
+    if room.image is not None:
+        obj.image = room.image
+
     db.commit()
     return obj
 

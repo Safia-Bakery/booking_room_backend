@@ -1,6 +1,8 @@
 import uvicorn
 # from starlette.middleware.sessions import SessionMiddleware
 from fastapi import FastAPI, status, Request
+from fastapi.staticfiles import StaticFiles
+
 from routers import app_routes, admin_routes, auth_routes
 from fastapi.middleware.cors import CORSMiddleware
 # from config.config import SECRET_KEY
@@ -32,6 +34,9 @@ main_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+main_app.mount("/files", StaticFiles(directory="files"), name="files")
 
 
 if __name__ == "__main__":

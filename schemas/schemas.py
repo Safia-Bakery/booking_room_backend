@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from typing import List, Optional, Union
 
+from fastapi import UploadFile, File
 from fastapi.params import Form
 from pydantic import BaseModel, ConfigDict, EmailStr
 from config.config import SECRET_KEY
@@ -20,7 +21,7 @@ class GetUserRole(TunedModel):
     permissions: List[str]
 
 
-class CreateUserRole(BaseModel):
+class CreateUserRole(TunedModel):
     role: str
     permissions: List[str]
 
@@ -28,10 +29,21 @@ class CreateUserRole(BaseModel):
 class GetRoom(TunedModel):
     id: int
     name: str
+    location: int
+    image: Optional[str]
 
 
-class CreateRoom(BaseModel):
+class CreateRoom(TunedModel):
     name: str
+    location: int
+    image: str
+
+
+class UpdateRoom(TunedModel):
+    id: int
+    name: Optional[str] = None
+    location: Optional[int] = None
+    image: Optional[str] = None
 
 
 class GetUser(TunedModel):
